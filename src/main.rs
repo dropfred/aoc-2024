@@ -22,6 +22,7 @@ fn main() {
 
     match day {
         1 => aoc::day_1::solve(),
+        2 => aoc::day_2::solve(),
         5 => aoc::day_5::solve(),
         _ => println!("day {day} not implemented")
     }
