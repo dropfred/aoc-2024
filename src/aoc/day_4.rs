@@ -1,5 +1,3 @@
-// https://dev.to/wrongbyte/implementing-iterator-and-intoiterator-in-rust-3nio
-
 struct Data {
     letters: Vec<String>,
     size: (usize, usize),
@@ -269,6 +267,12 @@ mod tests {
         assert!(data.letters.len() == data.size.1);
         assert!(data.size.0 == 10);
         assert!(data.letters.iter().all(|line| line.len() == data.size.0));
+    }
+
+    #[test]
+    fn test_part_1() {
+        let data = Data::new(DATA);
+        assert!(part_1(&data) == 18);
     }
 
     #[test]
