@@ -25,7 +25,13 @@
 //     }
 // }
 
-#[derive(Eq, PartialEq)]
+/*
+It took me quite some time to find my error which was that placing obstacles in positions the guard
+already passed would result in false positives. These obstacles would have been there the first time
+the guard passed and therefore he would have never reached his current position.
+*/
+
+#[derive(Eq, PartialEq, Debug)]
 enum Step {
     New,
     Visited,
@@ -56,28 +62,30 @@ impl Data {
     }
 
     fn next(&self) -> Option<Position> {
-        self.position.and_then(|(x, y, dir)| {
-            let (nx, ny) = match dir {
+        self.position.and_then(|(x, y, d)| {
+            let (nx, ny) = match d {
                 '^' => (x, y - 1),
                 '>' => (x + 1, y),
                 'v' => (x, y + 1),
                 '<' => (x - 1, y),
+                // 'O' => (x, y),
                 _ => panic!("invalid direction")
             };
             let (sx, sy) = (self.map[0].len() as i32, self.map.len() as i32);
             if (nx >= 0) && (nx < sx) && (ny >= 0) && (ny < sy) {
                 let c = self.map[ny as usize][nx as usize];
                 if c == '#' {
-                    let nd = match dir {
+                    let nd = match d {
                         '^' => '>',
                         '>' => 'v',
                         'v' => '<',
                         '<' => '^',
+                        // 'O' => 'O',
                         _ => panic!("invalid direction")
                     };
                     Some((x, y, nd))
                 } else {
-                    Some((nx, ny, dir))
+                    Some((nx, ny, d))
                 }
             } else {
                 None
@@ -91,8 +99,7 @@ impl Data {
             Some((nx, ny, nd)) => {
                 self.position = position;
                 let c = &mut self.map[ny as usize][nx as usize];
-                let s = if *c == '.' {*c = nd; Step::New} else if *c == nd {Step::Loop} else {Step::Visited};
-                s
+                if *c == '.' {*c = nd; Step::New} else if *c == nd {Step::Loop} else {Step::Visited}
             },
             None => {
                 self.position = None;
@@ -101,53 +108,18 @@ impl Data {
         }
     }
 
-    // fn step(&mut self) -> Step {
-    //     match self.position {
-    //         Some((x, y, dir)) => {
-    //             let (nx, ny) = match dir {
-    //                 '^' => (x, y - 1),
-    //                 '>' => (x + 1, y),
-    //                 'v' => (x, y + 1),
-    //                 '<' => (x - 1, y),
-    //                 _ => panic!("invalid direction")
-    //             };
-    //             let (sx, sy) = (self.map[0].len() as i32, self.map.len() as i32);
-    //             if (nx >= 0) && (nx < sx) && (ny >= 0) && (ny < sy) {
-    //                 let c = &mut self.map[ny as usize][nx as usize];
-    //                 if *c == '#' {
-    //                     let nd = match dir {
-    //                         '^' => '>',
-    //                         '>' => 'v',
-    //                         'v' => '<',
-    //                         '<' => '^',
-    //                         _ => panic!("invalid direction")
-    //                     };
-    //                     self.position = Some((x, y, nd));
-    //                     Step::Visited
-    //                 } else {
-    //                     self.position = Some((nx, ny, dir));
-    //                     let s = if *c == '.' {Step::New} else if *c == dir {Step::Loop} else {Step::Visited};
-    //                     *c = dir;
-    //                     s
-    //                 }
-    //             } else {
-    //                 self.position = None;
-    //                 Step::Out
-    //             }
-    //         },
-    //         None => Step::Out
-    //     }
-    // }
-
     fn reset(&mut self, position: Option<Position>) {
         for cs in &mut self.map {
             for c in cs {
                 if *c != '#' {
                     *c = '.';
                 }
-                self.position = position;
             }
         }
+        if let Some((x, y, d)) = position {
+            self.map[y as usize][x as usize] = d;
+        }
+        self.position = position;
     }
 }
 
@@ -161,10 +133,21 @@ fn part_1(data: &mut Data) -> u32 {
 
 fn part_2(data: &mut Data) -> u32 {
     let mut total = 0;
-    // while !data.position.is_none() {
-    //     let test = data.clone();
-    //     if data.step() == Step::New {total += 1;}
-    // }
+    while !data.position.is_none() {
+        let mut test = data.clone();
+        if let Some((x, y, _)) = test.next() {
+            if test.map[y as usize][x as usize] == '.' {
+                test.map[y as usize][x as usize] = '#';
+                while !test.position.is_none() {
+                    if test.step() == Step::Loop {
+                        total += 1;
+                        break;
+                    }
+                }
+            }
+        }
+        data.step();
+    }
     total
 }
 
@@ -195,8 +178,9 @@ mod tests {
         assert!(part_1(&mut data) == 41);
     }
 
-    // #[test]
-    // fn test_loop_1() {
-    //     let mut data = Data::new("");
-    // }
+    #[test]
+    fn test_part_2() {
+        let mut data = Data::new(DATA);
+        assert!(part_2(&mut data) == 6);
+    }
 }
