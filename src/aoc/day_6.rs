@@ -1,36 +1,3 @@
-// #[repr(u8)]
-// enum Direction {
-//     N = b'^',
-//     E = b'>',
-//     S = b'v',
-//     W = b'<'
-// }
-
-// enum Direction {
-//     N,
-//     E,
-//     S,
-//     W
-// }
-
-// impl Direction {
-//     fn from_char(c: char) -> Self {
-//         match c {
-//             '^' => Direction::N,
-//             '>' => Direction::E,
-//             'v' => Direction::S,
-//             '<' => Direction::W,
-//             _ => panic!("invalid direction")
-//         }
-//     }
-// }
-
-/*
-It took me quite some time to find my error which was that placing obstacles in positions the guard
-already passed would result in false positives. These obstacles would have been there the first time
-the guard passed and therefore he would have never reached his current position.
-*/
-
 #[derive(Eq, PartialEq, Debug)]
 enum Step {
     New,
