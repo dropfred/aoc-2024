@@ -1,23 +1,33 @@
-// use std::collections::{HashMap, HashSet};
-
 struct Data {
-    fs: Vec<u32>
+    fs: Vec<u32>,
+    files: Vec<(usize, usize)>,
+    spaces: Vec<(usize, usize)>
 }
 
 impl Data {
     fn new(data: &str) -> Self {
-        // Data {grid: data.trim().lines().map(|s| s.trim().chars().collect()).collect()}
         let mut fs = Vec::new();
-        for (i, c) in data.trim().as_bytes().iter().enumerate() {
-            let n = c - b'0';
+        let mut files = Vec::new();
+        let mut spaces = Vec::new();
+        for (i, c) in data.trim().chars().enumerate() {
+            let n = c.to_digit(10).unwrap();
             let id = if (i & 1) == 0 {(i / 2) as u32} else {u32::MAX};
+            (if id != u32::MAX {&mut files} else {&mut spaces}).push((fs.len(), n as usize));
             fs.extend(std::iter::repeat(id).take(n as usize));
         }
-        Data {fs}
+        Data {fs, files, spaces}
     }
 }
 
+fn checksum(fs: &Vec<u32>) -> u64 {
+    fs.iter().enumerate()
+             .filter(|(_, id)| **id != u32::MAX)
+             .map(|(i, id)| (i as u64) * (*id as u64))
+             .sum()
+}
+
 fn part_1(data: &Data) -> u64 {
+    if data.fs.is_empty() {return 0;}
     let mut fs = data.fs.clone();
     let mut b = 0;
     let mut e = fs.len() - 1;
@@ -33,16 +43,26 @@ fn part_1(data: &Data) -> u64 {
             break;
         }
     }
-    let mut checksum = 0;
-    for (i, id) in fs.iter().enumerate() {
-        if *id == u32::MAX {break;}
-        checksum += (i as u64) * (*id as u64);
-    }
-    checksum
+    checksum(&fs)
 }
 
-fn part_2(data: &Data) -> u32 {
-    todo!("part 2")
+fn part_2(data: &Data) -> u64 {
+    if data.fs.is_empty() {return 0;}
+    let mut fs = data.fs.clone();
+    let mut spaces = data.spaces.clone();
+    for file in data.files.iter().rev() {
+        if let Some(space) = spaces.iter_mut().find(|space| space.1 >= file.1) {
+            if space.0 < file.0 {
+                for i in 0..(file.1) {
+                    fs[space.0 + i] = fs[file.0 + i];
+                    fs[file.0 + i] = u32::MAX;
+                }
+                space.1 -= file.1;
+                space.0 += file.1;
+            }
+        }
+    }
+    checksum(&fs)
 }
 
 pub fn solve() {
@@ -60,7 +80,8 @@ mod tests {
     fn test_data() {
         let data = include_str!("../../data/day_9/test.txt");
         let data = Data::new(data);
-        assert!(data.fs.len() == "00...111...2...333.44.5555.6666.777.888899".len());
+        let fs = data.fs.iter().map(|id| if *id != u32::MAX {((*id as u8) + b'0') as char} else {'.'}).collect::<String>();
+        assert!(fs == "00...111...2...333.44.5555.6666.777.888899");
     }
 
     #[test]
