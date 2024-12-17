@@ -114,11 +114,6 @@ mod tests {
 
     const DATA: &str = include_str!("../../data/day_7/test.txt");
 
-    // #[test]
-    // fn test_data() {
-    //     let data = Data::new(DATA);
-    // }
-
     #[test]
     fn test_part_1() {
         let data = Data::new(DATA);

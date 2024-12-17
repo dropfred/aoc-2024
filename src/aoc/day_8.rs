@@ -41,7 +41,6 @@ fn part_1(data: &Data) -> u32 {
 fn part_2(data: &Data) -> u32 {
     let width = data.grid[0].len() as i32;
     let height = data.grid.len() as i32;
-    let size = std::cmp::max(width, height);
     let mut antennas = HashMap::new();
     let mut anti_nodes = HashSet::new();
     for y in 0..height {
@@ -51,7 +50,7 @@ fn part_2(data: &Data) -> u32 {
                 let antennas = antennas.entry(c).or_insert(Vec::new());
                 for (lx, ly) in antennas.iter() {
                     let (dx, dy) = (x - lx, y - ly);
-                    for i in 0..size {
+                    for i in 0.. {
                         let (nx, ny) = (lx - dx * i, ly - dy * i);
                         let d1 = if (nx >= 0) && (nx < width) && (ny >= 0) && (ny < height) {
                             anti_nodes.insert((nx, ny));
@@ -86,12 +85,6 @@ pub fn solve() {
 #[cfg(test)]
 mod tests {
     use super::*;
-
-    #[test]
-    fn test_data() {
-        let data = include_str!("../../data/day_8/test.txt");
-        let data = Data::new(data);
-    }
 
     #[test]
     fn test_part_1() {
