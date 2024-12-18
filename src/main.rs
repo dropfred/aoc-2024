@@ -31,6 +31,7 @@ fn main() {
         8 => aoc::day_8::solve(),
         9 => aoc::day_9::solve(),
         10 => aoc::day_10::solve(),
+        11 => aoc::day_11::solve(),
         _ => println!("day {day} not implemented")
     }
 }
