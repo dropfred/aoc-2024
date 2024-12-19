@@ -1,8 +1,8 @@
 #[derive(Debug)]
 struct Game {
-    button_a: (u64, u64),
-    button_b: (u64, u64),
-    prize: (u64, u64)
+    button_a: (i64, i64),
+    button_b: (i64, i64),
+    prize: (i64, i64)
 }
 struct Data {
     games: Vec<Game>
@@ -24,26 +24,40 @@ impl Data {
     }
 }
 
-fn part_1(data: &Data) -> u64 {
-    let mut games = Vec::new();
-    for g in &data.games {
-        for a in 0..=(g.prize.0 / g.button_a.0) {
-            let dax = a * g.button_a.0;
-            let dbx = g.prize.0 - dax;
-            if (dbx % g.button_b.0) == 0 {
-                let b = dbx / g.button_b.0;
-                if (a * g.button_a.1 + b * g.button_b.1) == g.prize.1 {
-                    games.push(a * 3 + b);
-                    break;
-                }
-            }
+fn solve_game(game: &Game) -> Option<(i64, i64)> {
+    let b = game.button_b.1 * game.button_a.0 - game.button_b.0 * game.button_a.1;
+    if b != 0 {
+        let b = (game.prize.1 * game.button_a.0 - game.button_a.1 * game.prize.0) / b;
+        let a = (game.prize.0 - b * game.button_b.0) / game.button_a.0;
+        if ((a * game.button_a.0 + b * game.button_b.0) == game.prize.0) && ((a * game.button_a.1 + b * game.button_b.1) == game.prize.1) {
+            Some((a, b))
+        } else {
+            None
         }
+    } else {
+        None
     }
-    games.iter().sum()
 }
 
-fn part_2(data: &Data) -> u64 {
-    todo!("part 2");
+fn part_1(data: &Data) -> i64 {
+    data.games.iter().map(|g| {
+        if let Some((a, b)) = solve_game(g) {
+            3 * a + b
+        } else {
+            0
+        }
+    }).sum()
+}
+
+fn part_2(data: &Data) -> i64 {
+    data.games.iter().map(|g| {
+        let g = Game {prize: (g.prize.0 + 10000000000000, g.prize.1 + 10000000000000), ..*g};
+        if let Some((a, b)) = solve_game(&g) {
+            3 * a + b
+        } else {
+            0
+        }
+    }).sum()
 }
 
 pub fn solve() {
@@ -69,12 +83,5 @@ mod tests {
         let data = include_str!("../../data/day_13/test.txt");
         let data = Data::new(data);
         assert!(part_1(&data) == 480);
-    }
-
-    #[test]
-    fn test_part_2() {
-        let data = include_str!("../../data/day_13/test.txt");
-        let data = Data::new(data);
-        assert!(part_2(&data) == 0);
     }
 }
