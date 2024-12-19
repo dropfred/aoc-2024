@@ -14,15 +14,17 @@ impl Data {
         if self.grid[y][x] != 0 {return 0;}
         let (w, h) = (self.grid[0].len(), self.grid.len());
         let mut ps = HashSet::new();
-        ps.insert((x, y));
+        ps.insert((x as i32, y as i32));
         for z in 1..=9 {
             let mut nps = HashSet::new();
             for (x, y) in &ps {
                 let (x, y) = (*x, *y);
-                if (((x as i32) - 1) >= 0) && (self.grid[y][x - 1] == z) {nps.insert((x - 1, y));}
-                if (((x as i32) + 1) < w as i32) && (self.grid[y][x + 1] == z) {nps.insert((x + 1, y));}
-                if (((y as i32) - 1) >= 0) && (self.grid[y - 1][x] == z) {nps.insert((x, y - 1));}
-                if (((y as i32) + 1) < h as i32) && (self.grid[y + 1][x] == z) {nps.insert((x, y + 1));}
+                for (dx, dy) in [(-1, 0), (1, 0), (0, -1), (0, 1)] {
+                    let (nx, ny) = (x + dx, y + dy);
+                    if (nx >= 0) && (nx < w as i32) && (ny >= 0) && (ny < h as i32) && (self.grid[ny as usize][nx as usize] == z) {
+                        nps.insert((nx, ny));
+                    }
+                }
             }
             ps = nps;
         }
@@ -33,16 +35,17 @@ impl Data {
         if self.grid[y][x] != 9 {return 0;}
         let (w, h) = (self.grid[0].len(), self.grid.len());
         let mut ps = Vec::new();
-        ps.push((x, y));
-        for z in 1..=9 {
-            let z = 9 - z;
+        ps.push((x as i32, y as i32));
+        for z in (0..=8).rev() {
             let mut nps = Vec::new();
             for (x, y) in &ps {
                 let (x, y) = (*x, *y);
-                if (((x as i32) - 1) >= 0) && (self.grid[y][x - 1] == z) {nps.push((x - 1, y));}
-                if (((x as i32) + 1) < w as i32) && (self.grid[y][x + 1] == z) {nps.push((x + 1, y));}
-                if (((y as i32) - 1) >= 0) && (self.grid[y - 1][x] == z) {nps.push((x, y - 1));}
-                if (((y as i32) + 1) < h as i32) && (self.grid[y + 1][x] == z) {nps.push((x, y + 1));}
+                for (dx, dy) in [(-1, 0), (1, 0), (0, -1), (0, 1)] {
+                    let (nx, ny) = (x + dx, y + dy);
+                    if (nx >= 0) && (nx < w as i32) && (ny >= 0) && (ny < h as i32) && (self.grid[ny as usize][nx as usize] == z) {
+                        nps.push((nx, ny));
+                    }
+                }
             }
             ps = nps;
         }
