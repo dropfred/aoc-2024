@@ -6,7 +6,7 @@ struct Data {
 
 impl Data {
     fn new(data: &str) -> Self {
-        let grid: Vec<_> = data.trim().lines().map(|s| s.trim().chars().map(|c| c.to_digit(10).unwrap_or(255) as u8).collect::<Vec<_>>()).collect();
+        let grid = data.trim().lines().map(|s| s.trim().chars().map(|c| c.to_digit(10).unwrap_or(255) as u8).collect()).collect();
         Data {grid}
     }
 

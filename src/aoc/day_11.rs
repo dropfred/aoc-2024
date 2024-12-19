@@ -71,6 +71,6 @@ mod tests {
     fn test_part_2() {
         let data = include_str!("../../data/day_11/test.txt");
         let data = Data::new(data);
-        assert!(part_2(&data) == 0);
+        assert!(part_2(&data) == 221632504974231);
     }
 }
