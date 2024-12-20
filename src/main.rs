@@ -30,8 +30,7 @@ fn main() {
             usage(&args[0]);
         }
     };
-    
-    // TODO: macro aoc!(day, [1, 2, 4..=8]); ?
+
     match day {
         1 => aoc::day_1::solve(),
         2 => aoc::day_2::solve(),
@@ -45,6 +44,7 @@ fn main() {
         11 => aoc::day_11::solve(),
         12 => aoc::day_12::solve(),
         13 => aoc::day_13::solve(),
+        14 => aoc::day_14::solve(),
         _ => println!("day {day} not implemented")
     }
 }
