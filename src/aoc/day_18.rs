@@ -1,6 +1,5 @@
 use std::collections::HashSet;
 
-#[derive(Clone, Debug)]
 struct Grid {
     cells: Vec<Vec<char>>
 }
@@ -125,52 +124,55 @@ fn solve_maze(map: &Grid, entry: (usize, usize), exit: (usize, usize), wall: cha
     None
 }
 
-fn solve_part_1(puzzle: &Puzzle, n: usize, w: usize, h: usize) -> u32 {
+fn solve_part_1(puzzle: &Puzzle, w: usize, h: usize, n: usize) -> Option<u32> {
     let mut memory = Grid::new(w, h, '.');
     for (x, y) in puzzle.bytes.iter().take(n) {
         memory.set(*x as usize, *y as usize, 'X');
     }
     // println!("{memory}");
-    solve_maze(&memory, (0, 0), (w - 1, h - 1), 'X').unwrap()
+    solve_maze(&memory, (0, 0), (w - 1, h - 1), 'X')
 
+}
+
+fn solve_part_2(puzzle: &Puzzle, w: usize, h: usize, skip: usize) -> Option<(u32, u32)> {
+    for (n, (x, y)) in puzzle.bytes.iter().enumerate().skip(skip) {
+        if solve_part_1(&puzzle, w, h, n + 1).is_none() {
+            return Some((*x, *y))
+        }
+    }
+    None
 }
 
 fn part_1(puzzle: &Puzzle) -> u32 {
-    solve_part_1(puzzle, 1024, 71, 71)
+    solve_part_1(puzzle, 71, 71, 1024).unwrap()
 }
 
-fn part_2(puzzle: &Puzzle) -> u32 {
-    todo!("part 2")
+fn part_2(puzzle: &Puzzle) -> (u32, u32) {
+    solve_part_2(puzzle, 71, 71, 1024).unwrap()
 }
 
 pub fn solve() {
     let puzzle = include_str!("../../data/day_18/input.txt");
     let puzzle = Puzzle::load(puzzle);
     println!("part 1: {}", part_1(&puzzle));
-    println!("part 2: {}", part_2(&puzzle));
+    println!("part 2: {:?}", part_2(&puzzle));
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
 
-    // #[test]
-    // fn test_data() {
-    //     let puzzle = include_str!("../../data/day_18/test.txt");
-    //     let puzzle = Puzzle::load(puzzle);
-    // }
-
     #[test]
     fn test_part_1() {
         let puzzle = include_str!("../../data/day_18/test.txt");
         let puzzle = Puzzle::load(puzzle);
-        assert!(solve_part_1(&puzzle, 12, 7, 7) == 22);
+        assert!(solve_part_1(&puzzle, 7, 7, 12).unwrap() == 22);
     }
 
     #[test]
     fn test_part_2() {
         let puzzle = include_str!("../../data/day_18/test.txt");
         let puzzle = Puzzle::load(puzzle);
-        assert!(part_2(&puzzle) == 0);
+        assert!(solve_part_2(&puzzle, 7, 7, 12).unwrap() == (6, 1));
     }
 }
