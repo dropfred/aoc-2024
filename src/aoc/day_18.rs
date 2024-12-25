@@ -1,4 +1,4 @@
-use std::collections::HashSet;
+use std::{cmp::Reverse, collections::{HashSet, BinaryHeap}};
 
 struct Grid {
     cells: Vec<Vec<char>>
@@ -96,20 +96,20 @@ fn solve_maze(map: &Grid, entry: (usize, usize), exit: (usize, usize), wall: cha
     let (width, height) = {let (w, h) = map.size(); (w as i32, h as i32)};
     let entry = (entry.0 as i32, entry.1 as i32);
     let exit = (exit.0 as i32, exit.1 as i32);
-    let mut ps/*: Vec<(i32, i32, u32)>*/ = Vec::new();
+    let mut ps = BinaryHeap::new();
     let mut vs = HashSet::new();
-    let mut visit = |ps: &mut Vec<_>, p, s: u32| {
+    let mut visit = |ps: &mut BinaryHeap<_>, p, s: u32| {
         if !vs.contains(&p) {
             let (x, y) = p;
             if (x >= 0) && (x < width) && (y >= 0) && (y < height) && (map.get(x as usize, y as usize) != wall) {
                 vs.insert(p);
-                ps.push((p, s));
+                ps.push(Reverse((s, p)));
             }
         }
     };
-    visit(&mut ps, entry, 0u32);
+    visit(&mut ps, entry, 0);
     while !ps.is_empty() {
-        let (p, s) = ps.pop().unwrap();
+        let Reverse((s, p)) = ps.pop().unwrap();
         if p == exit {
             return Some(s);
         }
@@ -119,7 +119,6 @@ fn solve_maze(map: &Grid, entry: (usize, usize), exit: (usize, usize), wall: cha
             let (nx, ny) = (x + dx, y + dy);
             visit(&mut ps, (nx, ny), s + 1);
         }
-        ps.sort_by(|a, b| b.1.cmp(&a.1));
     }
     None
 }
@@ -129,7 +128,6 @@ fn solve_part_1(puzzle: &Puzzle, w: usize, h: usize, n: usize) -> Option<u32> {
     for (x, y) in puzzle.bytes.iter().take(n) {
         memory.set(*x as usize, *y as usize, 'X');
     }
-    // println!("{memory}");
     solve_maze(&memory, (0, 0), (w - 1, h - 1), 'X')
 
 }
