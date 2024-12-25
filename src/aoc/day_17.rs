@@ -9,22 +9,22 @@ struct Computer {
 }
 
 impl Computer {
+    fn new(a: u64, b: u64, c: u64, program: Vec<u8>) -> Self {
+        Computer {a, b, c, program, ip: 0, out: String::new()}
+    }
+
     fn parse(data: &str) -> Option<Self> {
         let mut data = data.trim().lines();
         let a = data.next()?.trim().trim_start_matches("Register A: ").parse().ok()?;
         let b = data.next()?.trim().trim_start_matches("Register B: ").parse().ok()?;
         let c = data.next()?.trim().trim_start_matches("Register C: ").parse().ok()?;
         data.next();
-        let program = data.next()?.trim().trim_start_matches("Program: ").split(",").map(|s| s.parse().unwrap()).collect();
-        // let program: Vec<_> = data.next()?.trim().trim_start_matches("Program: ").split(",").map(|s| s.parse().unwrap_or(255)).collect();
-        // if program.iter().any(|c| *c == 255) {
-        //     return None;
-        // }
+        // let program = data.next()?.trim().trim_start_matches("Program: ").split(",").map(|s| s.parse().unwrap()).collect();
+        let program: Vec<_> = data.next()?.trim().trim_start_matches("Program: ").split(",").map(|s| s.parse().unwrap_or(255)).collect();
+        if program.iter().any(|c| *c == 255) {
+            return None;
+        }
         Some(Computer::new(a, b, c, program))
-    }
-
-    fn new(a: u64, b: u64, c: u64, program: Vec<u8>) -> Self {
-        Computer {a, b, c, program, ip: 0, out: String::new()}
     }
 
     // fn reset(&mut self, a: u64, b: u64, c: u64) {
@@ -47,9 +47,8 @@ impl Computer {
     }
 
     fn adv(&mut self, operand: u8) {
-        let n = self.a;
         let d = 1 << self.combo(operand);
-        self.a = n / d;
+        self.a /= d;
     }
 
     fn bxl(&mut self, operand: u8) {
@@ -66,10 +65,10 @@ impl Computer {
         }
     }
 
-    fn bxc(&mut self, _: u8) {
+    fn bxc(&mut self) {
         self.b ^= self.c;
     }
-    
+
     fn out(&mut self, operand: u8) {
         if !self.out.is_empty() {
             self.out.push(',');
@@ -78,15 +77,13 @@ impl Computer {
     }
 
     fn bdv(&mut self, operand: u8) {
-        let n = self.a;
         let d = 1 << self.combo(operand);
-        self.b = n / d;
+        self.b = self.a / d;
     }
 
     fn cdv(&mut self, operand: u8) {
-        let n = self.a;
         let d = 1 << self.combo(operand);
-        self.c = n / d;
+        self.c = self.a / d;
     }
 
     fn run(&mut self) -> &str {
@@ -98,7 +95,7 @@ impl Computer {
                 1 => self.bxl(operand),
                 2 => self.bst(operand),
                 3 => self.jnz(operand),
-                4 => self.bxc(operand),
+                4 => self.bxc(),
                 5 => self.out(operand),
                 6 => self.bdv(operand),
                 7 => self.cdv(operand),
@@ -112,36 +109,45 @@ impl Computer {
 
 impl std::fmt::Display for Computer {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        let opcode = |c| match c {
-            0 => "adv",
-            1 => "bxl",
-            2 => "bst",
-            3 => "jnz",
-            4 => "bxc",
-            5 => "out",
-            6 => "bdv",
-            7 => "cdv",
-            _ => panic!("invalid opcode")
-        };
         writeln!(f, "A: {:X}", self.a)?;
         writeln!(f, "B: {:X}", self.b)?;
         writeln!(f, "C: {:X}", self.c)?;
         writeln!(f, "IP: {:X}", self.ip)?;
         writeln!(f, "")?;
-        for i in 0..(self.program.len() / 2) {
-            writeln!(f, "{} {}", opcode(self.program[i * 2]), self.program[i * 2 + 1])?;
+        for ip in 0..(self.program.len() / 2) {
+            let (opcode, operand) = (self.program[ip * 2], self.program[ip * 2 + 1]);
+            let combo = if ((opcode == 2) || (opcode == 5)) && (operand > 3) && (operand < 7) {
+                ["A", "B", "C"][(operand - 4) as usize]
+            } else {
+                ""
+            };
+            let opcode =  match opcode {
+                0 => "adv",
+                1 => "bxl",
+                2 => "bst",
+                3 => "jnz",
+                4 => "bxc",
+                5 => "out",
+                6 => "bdv",
+                7 => "cdv",
+                _ => panic!("invalid opcode")
+            };
+            write!(f, "{:02}: {} {}", ip * 2, opcode, operand)?;
+            if !combo.is_empty() {
+                write!(f, " ({})", combo)?;
+            }
+            writeln!(f, "")?;
         }
         writeln!(f, "")?;
-        writeln!(f, "OUT: '{}'", self.out)?;
+        write!(f, "'{}'", self.out)?;
         Ok(())
     }
 }
 
 fn part_1() -> String {
-    let puzzle = include_str!("../../data/day_17/input.txt");
-    let mut puzzle = Computer::parse(puzzle).expect("valid input");
-    println!("{}", puzzle);
-    puzzle.run().to_string()
+    let computer = include_str!("../../data/day_17/input.txt");
+    let mut computer = Computer::parse(computer).expect("valid input");
+    computer.run().to_string()
 }
 
 fn part_2() -> u64 {
@@ -159,43 +165,43 @@ mod tests {
 
     #[test]
     fn test_data() {
-        let puzzle = include_str!("../../data/day_17/test_1.txt");
-        let puzzle = Computer::parse(puzzle).unwrap();
-        assert!(puzzle.a == 729);
-        assert!(puzzle.b == 0);
-        assert!(puzzle.c == 0);
-        assert!(puzzle.program.len() == 6);
+        let computer = include_str!("../../data/day_17/test_1.txt");
+        let computer = Computer::parse(computer).unwrap();
+        assert!(computer.a == 729);
+        assert!(computer.b == 0);
+        assert!(computer.c == 0);
+        assert!(computer.program.len() == 6);
     }
 
     #[test]
     fn test_run() {
-        let mut puzzle = Computer::new(0, 0, 0, vec![5, 0]);
-        assert!(puzzle.run() == "0");
+        let mut computer = Computer::new(0, 0, 0, vec![5, 0]);
+        assert!(computer.run() == "0");
 
-        let mut puzzle = Computer::new(10, 0, 0, vec![5, 4]);
-        assert!(puzzle.run() == "2");
+        let mut computer = Computer::new(10, 0, 0, vec![5, 4]);
+        assert!(computer.run() == "2");
 
-        let mut puzzle = Computer::new(0, 0, 9, vec![2, 6]);
-        assert!(puzzle.run() == "");
-        assert!(puzzle.b == 1);
+        let mut computer = Computer::new(0, 0, 9, vec![2, 6]);
+        assert!(computer.run() == "");
+        assert!(computer.b == 1);
 
-        let mut puzzle = Computer::new(0, 29, 0, vec![1, 7]);
-        assert!(puzzle.run() == "");
-        assert!(puzzle.b == 26);
+        let mut computer = Computer::new(0, 29, 0, vec![1, 7]);
+        assert!(computer.run() == "");
+        assert!(computer.b == 26);
 
-        let mut puzzle = Computer::new(0, 2024, 43690, vec![4, 0]);
-        assert!(puzzle.run() == "");
-        assert!(puzzle.b == 44354);
+        let mut computer = Computer::new(0, 2024, 43690, vec![4, 0]);
+        assert!(computer.run() == "");
+        assert!(computer.b == 44354);
 
-        let mut puzzle = Computer::new(10, 0, 0, vec![5,0,5,1,5,4]);
-        assert!(puzzle.run() == "0,1,2");
+        let mut computer = Computer::new(10, 0, 0, vec![5,0,5,1,5,4]);
+        assert!(computer.run() == "0,1,2");
 
-        let mut puzzle = Computer::new(2024, 0, 0, vec![0,1,5,4,3,0]);
-        assert!(puzzle.run() == "4,2,5,6,7,7,7,7,3,1,0");
-        assert!(puzzle.a == 0);
+        let mut computer = Computer::new(2024, 0, 0, vec![0,1,5,4,3,0]);
+        assert!(computer.run() == "4,2,5,6,7,7,7,7,3,1,0");
+        assert!(computer.a == 0);
 
-        let puzzle = include_str!("../../data/day_17/test_1.txt");
-        let mut puzzle = Computer::parse(puzzle).unwrap();
-        assert!(puzzle.run() == "4,6,3,5,6,3,5,2,1,0");
+        let computer = include_str!("../../data/day_17/test_1.txt");
+        let mut computer = Computer::parse(computer).unwrap();
+        assert!(computer.run() == "4,6,3,5,6,3,5,2,1,0");
     }
 }
