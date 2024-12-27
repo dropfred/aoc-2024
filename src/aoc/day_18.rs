@@ -133,9 +133,23 @@ fn solve_part_1(puzzle: &Puzzle, w: usize, h: usize, n: usize) -> Option<u32> {
 }
 
 fn solve_part_2(puzzle: &Puzzle, w: usize, h: usize, skip: usize) -> Option<(u32, u32)> {
-    for (n, (x, y)) in puzzle.bytes.iter().enumerate().skip(skip) {
-        if solve_part_1(&puzzle, w, h, n + 1).is_none() {
-            return Some((*x, *y))
+    let mut b: usize = skip;
+    let mut e = puzzle.bytes.len() - 1;
+    loop {
+        let m = (b + e) / 2;
+        let ms = solve_part_1(&puzzle, w, h, m).is_some();
+        let mn = solve_part_1(&puzzle, w, h, m + 1).is_none();
+        if ms && mn {
+            return Some(puzzle.bytes[m]);
+        }
+        if (e - b) > 1 {
+            if ms {
+                b = m;
+            } else {
+                e = m;
+            }
+        } else {
+            break;
         }
     }
     None
