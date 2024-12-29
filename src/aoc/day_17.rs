@@ -201,7 +201,7 @@ mod tests {
 
     #[test]
     fn test_data() {
-        let computer = include_str!("../../data/day_17/test.txt");
+        let computer = include_str!("../../data/day_17/test_1.txt");
         let computer = Computer::parse(computer).unwrap();
         assert!(computer.a == 729);
         assert!(computer.b == 0);
@@ -236,7 +236,7 @@ mod tests {
         assert!(computer.run() == "4,2,5,6,7,7,7,7,3,1,0");
         assert!(computer.a == 0);
 
-        let computer = include_str!("../../data/day_17/test.txt");
+        let computer = include_str!("../../data/day_17/test_1.txt");
         let mut computer = Computer::parse(computer).unwrap();
         assert!(computer.run() == "4,6,3,5,6,3,5,2,1,0");
     }

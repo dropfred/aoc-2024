@@ -1,4 +1,4 @@
-use std::{cmp::Reverse, collections::{HashSet, BinaryHeap}};
+use std::collections::{HashSet, VecDeque};
 
 struct Grid {
     cells: Vec<Vec<char>>
@@ -96,20 +96,20 @@ fn solve_maze(map: &Grid, entry: (usize, usize), exit: (usize, usize), wall: cha
     let (width, height) = {let (w, h) = map.size(); (w as i32, h as i32)};
     let entry = (entry.0 as i32, entry.1 as i32);
     let exit = (exit.0 as i32, exit.1 as i32);
-    let mut ps = BinaryHeap::new();
+    let mut ps = VecDeque::new();
     let mut vs = HashSet::new();
-    let mut visit = |ps: &mut BinaryHeap<_>, p, s: u32| {
+    let mut visit = |ps: &mut VecDeque<_>, p, s: u32| {
         if !vs.contains(&p) {
             let (x, y) = p;
             if (x >= 0) && (x < width) && (y >= 0) && (y < height) && (map.get(x as usize, y as usize) != wall) {
                 vs.insert(p);
-                ps.push(Reverse((s, p)));
+                ps.push_back((s, p));
             }
         }
     };
     visit(&mut ps, entry, 0);
     while !ps.is_empty() {
-        let Reverse((s, p)) = ps.pop().unwrap();
+        let (s, p) = ps.pop_front().unwrap();
         if p == exit {
             return Some(s);
         }
