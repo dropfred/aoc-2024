@@ -1,4 +1,4 @@
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 struct Computer {
     ip: usize,
     a: u64,
@@ -19,12 +19,19 @@ impl Computer {
         let b = data.next()?.trim().trim_start_matches("Register B: ").parse().ok()?;
         let c = data.next()?.trim().trim_start_matches("Register C: ").parse().ok()?;
         data.next();
-        // let program = data.next()?.trim().trim_start_matches("Program: ").split(",").map(|s| s.parse().unwrap()).collect();
-        let program: Vec<_> = data.next()?.trim().trim_start_matches("Program: ").split(",").map(|s| s.parse().unwrap_or(255)).collect();
-        if program.iter().any(|c| *c == 255) {
+        let program: Vec<_> = data.next()?.trim().trim_start_matches("Program: ").split(",").map(|s| s.parse()).collect();
+        if program.iter().any(|b| b.is_err()) {
+            return None;
+        }
+        let program: Vec<_> = program.into_iter().map(|b| b.unwrap()).collect();
+        if program.iter().any(|b| *b > 7) {
             return None;
         }
         Some(Computer::new(a, b, c, program))
+    }
+
+    fn load(data: &str) -> Self {
+        Self::parse(data).expect("vaalid input")
     }
 
     // fn reset(&mut self, a: u64, b: u64, c: u64) {
@@ -47,8 +54,7 @@ impl Computer {
     }
 
     fn adv(&mut self, operand: u8) {
-        let d = 1 << self.combo(operand);
-        self.a /= d;
+        self.a >>= self.combo(operand);
     }
 
     fn bxl(&mut self, operand: u8) {
@@ -58,7 +64,7 @@ impl Computer {
     fn bst(&mut self, operand: u8) {
         self.b = self.combo(operand) & 7;
     }
-
+    
     fn jnz(&mut self, operand: u8) {
         if self.a != 0 {
             self.ip = operand as usize;
@@ -77,15 +83,13 @@ impl Computer {
     }
 
     fn bdv(&mut self, operand: u8) {
-        let d = 1 << self.combo(operand);
-        self.b = self.a / d;
+        self.b = self.a >> self.combo(operand);
     }
 
     fn cdv(&mut self, operand: u8) {
-        let d = 1 << self.combo(operand);
-        self.c = self.a / d;
+        self.c = self.a >> self.combo(operand);
     }
-
+    
     fn run(&mut self) -> &str {
         while self.ip != self.program.len() {
             let (opcode, operand) = (self.program[self.ip], self.program[self.ip + 1]);
@@ -116,7 +120,7 @@ impl std::fmt::Display for Computer {
         writeln!(f, "")?;
         for ip in 0..(self.program.len() / 2) {
             let (opcode, operand) = (self.program[ip * 2], self.program[ip * 2 + 1]);
-            let combo = if ((opcode == 2) || (opcode == 5)) && (operand > 3) && (operand < 7) {
+            let combo = if ((opcode != 1) && (opcode != 3) && (opcode != 4)) && (operand > 3) && (operand < 7) {
                 ["A", "B", "C"][(operand - 4) as usize]
             } else {
                 ""
@@ -139,7 +143,7 @@ impl std::fmt::Display for Computer {
             writeln!(f, "")?;
         }
         writeln!(f, "")?;
-        write!(f, "'{}'", self.out)?;
+        write!(f, "OUT: '{}'", self.out)?;
         Ok(())
     }
 }
@@ -150,8 +154,40 @@ fn part_1() -> String {
     computer.run().to_string()
 }
 
+fn run_loop(a: u64) -> u8 {
+    let b = (a & 7) ^ 4;
+    let c = a >> b;
+    (((b ^ c) ^ 4) & 7) as u8
+}
+
+fn solve_part_2(computer: &Computer) -> Option<u64> {
+    let mut ps = vec![0];
+    for b in computer.program.iter().rev() {
+        let mut nps = Vec::new();
+        for a in &ps {
+            let na = a << 3;
+            for na in na..(na + 8) {
+                if run_loop(na) == *b {
+                    if na > 0 {nps.push(na);}
+                }
+            }
+        }
+        if nps.is_empty() {
+            return None;
+        }
+        ps = nps;
+    }
+    if ps.is_empty() {
+        None
+    } else {
+        Some(ps[0])
+    }
+}
+
 fn part_2() -> u64 {
-    todo!("part 2");
+    let computer = include_str!("../../data/day_17/input.txt");
+    let computer = Computer::load(computer);
+    solve_part_2(&computer).expect("solvable puzzle")
 }
 
 pub fn solve() {
@@ -165,7 +201,7 @@ mod tests {
 
     #[test]
     fn test_data() {
-        let computer = include_str!("../../data/day_17/test_1.txt");
+        let computer = include_str!("../../data/day_17/test.txt");
         let computer = Computer::parse(computer).unwrap();
         assert!(computer.a == 729);
         assert!(computer.b == 0);
@@ -200,8 +236,18 @@ mod tests {
         assert!(computer.run() == "4,2,5,6,7,7,7,7,3,1,0");
         assert!(computer.a == 0);
 
-        let computer = include_str!("../../data/day_17/test_1.txt");
+        let computer = include_str!("../../data/day_17/test.txt");
         let mut computer = Computer::parse(computer).unwrap();
         assert!(computer.run() == "4,6,3,5,6,3,5,2,1,0");
+    }
+
+    #[test]
+    fn test_part_1() {
+        assert!(part_1() == "7,0,7,3,4,1,3,0,1");
+    }
+
+    #[test]
+    fn test_part_2() {
+        assert!(part_2() == 156985331222018);
     }
 }
