@@ -80,7 +80,7 @@ struct Tile {
 fn solve_maze(data: &Data) -> Option<u32> {
     let mut ps = Vec::new();
     let mut vs = HashSet::new();
-    ps.push(Tile {p: data.find('S').expect("start should be present"), d: '>', t: 0});
+    ps.push(Tile {p: data.find('S').expect("start"), d: '>', t: 0});
     while !ps.is_empty() {
         let Tile {p, d, t} = ps.pop().unwrap();
         if data.get(&p) == 'E' {
@@ -149,7 +149,7 @@ mod tests {
         ####
         ";
         let data = Data::parse(data);
-        assert!(part_1(&data) == 1);
+        assert_eq!(part_1(&data), 1);
 
         let data = "
         #####
@@ -157,7 +157,7 @@ mod tests {
         #####
         ";
         let data = Data::parse(data);
-        assert!(part_1(&data) == 2);
+        assert_eq!(part_1(&data), 2);
 
         let data = "
         ###
@@ -166,7 +166,7 @@ mod tests {
         ###
         ";
         let data = Data::parse(data);
-        assert!(part_1(&data) == 1001);
+        assert_eq!(part_1(&data), 1001);
 
         let data = "
         ###
@@ -176,34 +176,34 @@ mod tests {
         ###
         ";
         let data = Data::parse(data);
-        assert!(part_1(&data) == 1002);
+        assert_eq!(part_1(&data), 1002);
     }
 
     #[test]
     fn test_part_1_1() {
         let data = include_str!("../../data/day_16/test_1.txt");
         let data = Data::parse(data);
-        assert!(part_1(&data) == 7036);
+        assert_eq!(part_1(&data), 7036);
     }
 
     #[test]
     fn test_part_1_2() {
         let data = include_str!("../../data/day_16/test_2.txt");
         let data = Data::parse(data);
-        assert!(part_1(&data) == 11048);
+        assert_eq!(part_1(&data), 11048);
     }
 
     #[test]
     fn test_part_2_1() {
         let data = include_str!("../../data/day_16/test_1.txt");
         let data = Data::parse(data);
-        assert!(part_2(&data) == 45);
+        assert_eq!(part_2(&data), 45);
     }
 
     #[test]
     fn test_part_2_2() {
         let data = include_str!("../../data/day_16/test_2.txt");
         let data = Data::parse(data);
-        assert!(part_2(&data) == 64);
+        assert_eq!(part_2(&data), 64);
     }
 }

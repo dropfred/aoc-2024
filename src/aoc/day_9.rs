@@ -81,20 +81,20 @@ mod tests {
         let data = include_str!("../../data/day_9/test.txt");
         let data = Data::new(data);
         let fs = data.fs.iter().map(|id| if *id != u32::MAX {((*id as u8) + b'0') as char} else {'.'}).collect::<String>();
-        assert!(fs == "00...111...2...333.44.5555.6666.777.888899");
+        assert_eq!(fs, "00...111...2...333.44.5555.6666.777.888899");
     }
 
     #[test]
     fn test_part_1() {
         let data = include_str!("../../data/day_9/test.txt");
         let data = Data::new(data);
-        assert!(part_1(&data) == 1928);
+        assert_eq!(part_1(&data), 1928);
     }
 
     #[test]
     fn test_part_2() {
         let data = include_str!("../../data/day_9/test.txt");
         let data = Data::new(data);
-        assert!(part_2(&data) == 2858);
+        assert_eq!(part_2(&data), 2858);
     }
 }

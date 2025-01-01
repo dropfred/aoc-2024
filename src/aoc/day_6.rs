@@ -135,19 +135,19 @@ mod tests {
     #[test]
     fn test_data() {
         let data = Data::new(DATA);
-        assert!(data.map.len() == 10);
+        assert_eq!(data.map.len(), 10);
         assert!(data.map.iter().all(|line| line.len() == 10));
     }
 
     #[test]
     fn test_part_1() {
         let mut data = Data::new(DATA);
-        assert!(part_1(&mut data) == 41);
+        assert_eq!(part_1(&mut data), 41);
     }
 
     #[test]
     fn test_part_2() {
         let mut data = Data::new(DATA);
-        assert!(part_2(&mut data) == 6);
+        assert_eq!(part_2(&mut data), 6);
     }
 }

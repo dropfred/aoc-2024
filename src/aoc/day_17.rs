@@ -203,51 +203,51 @@ mod tests {
     fn test_data() {
         let computer = include_str!("../../data/day_17/test_1.txt");
         let computer = Computer::parse(computer).unwrap();
-        assert!(computer.a == 729);
-        assert!(computer.b == 0);
-        assert!(computer.c == 0);
-        assert!(computer.program.len() == 6);
+        assert_eq!(computer.a, 729);
+        assert_eq!(computer.b, 0);
+        assert_eq!(computer.c, 0);
+        assert_eq!(computer.program.len(), 6);
     }
 
     #[test]
     fn test_run() {
         let mut computer = Computer::new(0, 0, 0, vec![5, 0]);
-        assert!(computer.run() == "0");
+        assert_eq!(computer.run(), "0");
 
         let mut computer = Computer::new(10, 0, 0, vec![5, 4]);
-        assert!(computer.run() == "2");
+        assert_eq!(computer.run(), "2");
 
         let mut computer = Computer::new(0, 0, 9, vec![2, 6]);
-        assert!(computer.run() == "");
-        assert!(computer.b == 1);
+        assert_eq!(computer.run(), "");
+        assert_eq!(computer.b, 1);
 
         let mut computer = Computer::new(0, 29, 0, vec![1, 7]);
-        assert!(computer.run() == "");
-        assert!(computer.b == 26);
+        assert_eq!(computer.run(), "");
+        assert_eq!(computer.b, 26);
 
         let mut computer = Computer::new(0, 2024, 43690, vec![4, 0]);
-        assert!(computer.run() == "");
-        assert!(computer.b == 44354);
+        assert_eq!(computer.run(), "");
+        assert_eq!(computer.b, 44354);
 
         let mut computer = Computer::new(10, 0, 0, vec![5,0,5,1,5,4]);
-        assert!(computer.run() == "0,1,2");
+        assert_eq!(computer.run(), "0,1,2");
 
         let mut computer = Computer::new(2024, 0, 0, vec![0,1,5,4,3,0]);
-        assert!(computer.run() == "4,2,5,6,7,7,7,7,3,1,0");
-        assert!(computer.a == 0);
+        assert_eq!(computer.run(), "4,2,5,6,7,7,7,7,3,1,0");
+        assert_eq!(computer.a, 0);
 
         let computer = include_str!("../../data/day_17/test_1.txt");
         let mut computer = Computer::parse(computer).unwrap();
-        assert!(computer.run() == "4,6,3,5,6,3,5,2,1,0");
+        assert_eq!(computer.run(), "4,6,3,5,6,3,5,2,1,0");
     }
 
     #[test]
     fn test_part_1() {
-        assert!(part_1() == "7,0,7,3,4,1,3,0,1");
+        assert_eq!(part_1(), "7,0,7,3,4,1,3,0,1");
     }
 
     #[test]
     fn test_part_2() {
-        assert!(part_2() == 156985331222018);
+        assert_eq!(part_2(), 156985331222018);
     }
 }

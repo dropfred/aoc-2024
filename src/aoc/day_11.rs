@@ -57,20 +57,20 @@ mod tests {
     fn test_data() {
         let data = include_str!("../../data/day_11/test.txt");
         let data = Data::new(data);
-        assert!(data.stones.len() == 2);
+        assert_eq!(data.stones.len(), 2);
     }
 
     #[test]
     fn test_part_1() {
         let data = include_str!("../../data/day_11/test.txt");
         let data = Data::new(data);
-        assert!(part_1(&data) == 55312);
+        assert_eq!(part_1(&data), 55312);
     }
 
     #[test]
     fn test_part_2() {
-        let data = include_str!("../../data/day_11/test.txt");
+        let data = include_str!("../../data/day_11/input.txt");
         let data = Data::new(data);
-        assert!(part_2(&data) == 221632504974231);
+        assert_eq!(part_2(&data), 221632504974231);
     }
 }

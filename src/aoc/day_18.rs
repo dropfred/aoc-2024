@@ -178,13 +178,13 @@ mod tests {
     fn test_part_1() {
         let puzzle = include_str!("../../data/day_18/test.txt");
         let puzzle = Puzzle::load(puzzle);
-        assert!(solve_part_1(&puzzle, 7, 7, 12).unwrap() == 22);
+        assert_eq!(solve_part_1(&puzzle, 7, 7, 12).unwrap(), 22);
     }
 
     #[test]
     fn test_part_2() {
         let puzzle = include_str!("../../data/day_18/test.txt");
         let puzzle = Puzzle::load(puzzle);
-        assert!(solve_part_2(&puzzle, 7, 7, 12).unwrap() == (6, 1));
+        assert_eq!(solve_part_2(&puzzle, 7, 7, 12).unwrap(), (6, 1));
     }
 }

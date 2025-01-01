@@ -155,8 +155,8 @@ mod tests {
     fn test_data() {
         let data = include_str!("../../data/day_12/test.txt");
         let data = Data::load(data);
-        assert!(data.map.len() == 10);
-        assert!(data.map[0].len() == 10);
+        assert_eq!(data.map.len(), 10);
+        assert_eq!(data.map[0].len(), 10);
         assert!(data.map.iter().all(|v| v.len() == data.map[0].len()));
     }
 
@@ -173,9 +173,9 @@ mod tests {
                 'E' => (3, 8, 4),
                 _ => panic!("invalid factory")
             };
-            assert!(r.area == area);
-            assert!(r.perimeter == perimeter);
-            assert!(r.edges == edges);
+            assert_eq!(r.area, area);
+            assert_eq!(r.perimeter, perimeter);
+            assert_eq!(r.edges, edges);
         }
 
         let data = Data::load(TEST_OX);
@@ -186,35 +186,35 @@ mod tests {
                 'X' => (1, 4, 4),
                 _ => panic!("invalid factory")
             };
-            assert!(r.area == area);
-            assert!(r.perimeter == perimeter);
-            assert!(r.edges == edges);
+            assert_eq!(r.area, area);
+            assert_eq!(r.perimeter, perimeter);
+            assert_eq!(r.edges, edges);
         }
     }
 
     #[test]
     fn test_part_1() {
         let data = Data::load(TEST_ABCDE);
-        assert!(part_1(&data) == 140);
+        assert_eq!(part_1(&data), 140);
 
         let data = Data::load(TEST_OX);
-        assert!(part_1(&data) == 772);
+        assert_eq!(part_1(&data), 772);
 
         let data = include_str!("../../data/day_12/test.txt");
         let data = Data::load(data);
-        assert!(part_1(&data) == 1930);
+        assert_eq!(part_1(&data), 1930);
     }
 
     #[test]
     fn test_part_2() {
         let data = Data::load(TEST_ABCDE);
-        assert!(part_2(&data) == 80);
+        assert_eq!(part_2(&data), 80);
 
         let data = Data::load(TEST_OX);
-        assert!(part_2(&data) == 436);
+        assert_eq!(part_2(&data), 436);
 
         let data = include_str!("../../data/day_12/test.txt");
         let data = Data::load(data);
-        assert!(part_2(&data) == 1206);
+        assert_eq!(part_2(&data), 1206);
     }
 }

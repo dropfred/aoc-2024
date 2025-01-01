@@ -101,13 +101,13 @@ mod tests {
     fn test_data() {
         let data = include_str!("../../data/day_14/test.txt");
         let data = Data::parse(data);
-        assert!(data.robots.len() == 12)
+        assert_eq!(data.robots.len(), 12)
     }
 
     #[test]
     fn test_part_1() {
         let data = include_str!("../../data/day_14/test.txt");
         let data = Data::parse(data);
-        assert!(quadrants(&data, (11, 7), 100) == 12);
+        assert_eq!(quadrants(&data, (11, 7), 100), 12);
     }
 }

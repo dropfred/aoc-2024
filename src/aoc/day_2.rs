@@ -83,19 +83,19 @@ mod tests {
     #[test]
     fn test_data() {
         let data = Data::new(DATA);
-        assert!(data.reports.len() == 6);
+        assert_eq!(data.reports.len(), 6);
         assert!(data.reports.iter().all(|levels| levels.len() == 5));
     }
 
     #[test]
     fn test_part_1() {
         let data = Data::new(DATA);
-        assert!(part_1(&data) == 2);
+        assert_eq!(part_1(&data), 2);
     }
 
     #[test]
     fn test_part_2() {
         let data = Data::new(DATA);
-        assert!(part_2(&data) == 4);
+        assert_eq!(part_2(&data), 4);
     }
 }

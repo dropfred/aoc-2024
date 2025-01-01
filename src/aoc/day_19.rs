@@ -59,21 +59,21 @@ mod tests {
     fn test_data() {
         let data = include_str!("../../data/day_19/test.txt");
         let data = Data::parse(data).unwrap();
-        assert!(data.patterns.len() == 8);
-        assert!(data.designs.len() == 8);
+        assert_eq!(data.patterns.len(), 8);
+        assert_eq!(data.designs.len(), 8);
     }
 
     #[test]
     fn test_part_1() {
         let data = include_str!("../../data/day_19/test.txt");
         let data = Data::parse(data).unwrap();
-        assert!(part_1(&data) == 6);
+        assert_eq!(part_1(&data), 6);
     }
 
     #[test]
     fn test_part_2() {
         let data = include_str!("../../data/day_19/test.txt");
         let data = Data::parse(data).unwrap();
-        assert!(part_2(&data) == 16);
+        assert_eq!(part_2(&data), 16);
     }
 }

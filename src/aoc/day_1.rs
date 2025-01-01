@@ -55,13 +55,13 @@ mod tests {
     fn test_part_1() {
         let data = include_str!("../../data/day_1/test.txt");
         let data = Data::new(data);
-        assert!(part_1(&data) == 11);
+        assert_eq!(part_1(&data), 11);
     }
 
     #[test]
     fn test_part_2() {
         let data = include_str!("../../data/day_1/test.txt");
         let data = Data::new(data);
-        assert!(part_2(&data) == 31);
+        assert_eq!(part_2(&data), 31);
     }
 }

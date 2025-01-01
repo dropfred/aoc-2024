@@ -121,35 +121,35 @@ mod tests {
     fn test_data() {
         let data = include_str!("../../data/day_15/test_1.txt");
         let data = Data::parse(data);
-        assert!(data.grid.len() == 8);
-        assert!(data.grid[0].len() == 8);
-        assert!(data.moves.len() == 15);
+        assert_eq!(data.grid.len(), 8);
+        assert_eq!(data.grid[0].len(), 8);
+        assert_eq!(data.moves.len(), 15);
 
         let data = include_str!("../../data/day_15/test_2.txt");
         let data = Data::parse(data);
-        assert!(data.grid.len() == 10);
-        assert!(data.grid[0].len() == 10);
-        assert!(data.moves.len() == 700);
+        assert_eq!(data.grid.len(), 10);
+        assert_eq!(data.grid[0].len(), 10);
+        assert_eq!(data.moves.len(), 700);
     }
 
     #[test]
     fn test_part_1_1() {
         let data = include_str!("../../data/day_15/test_1.txt");
         let data = Data::parse(data);
-        assert!(part_1(&data) == 2028);
+        assert_eq!(part_1(&data), 2028);
     }
 
     #[test]
     fn test_part_1_2() {
         let data = include_str!("../../data/day_15/test_2.txt");
         let data = Data::parse(data);
-        assert!(part_1(&data) == 10092);
+        assert_eq!(part_1(&data), 10092);
     }
 
     #[test]
     fn test_part_2() {
         let data = include_str!("../../data/day_15/test_1.txt");
         let data = Data::parse(data);
-        assert!(part_2(&data) == 0);
+        assert_eq!(part_2(&data), 0);
     }
 }

@@ -117,12 +117,12 @@ mod tests {
     #[test]
     fn test_part_1() {
         let data = Data::new(DATA);
-        assert!(part_1(&data) == 3749);
+        assert_eq!(part_1(&data), 3749);
     }
 
     #[test]
     fn test_part_2() {
         let data = Data::new(DATA);
-        assert!(part_2(&data) == 11387);
+        assert_eq!(part_2(&data), 11387);
     }
 }

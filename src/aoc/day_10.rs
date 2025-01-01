@@ -90,7 +90,7 @@ mod tests {
     fn test_data() {
         let data = include_str!("../../data/day_10/test.txt");
         let data = Data::new(data);
-        assert!(data.grid.len() == 8);
+        assert_eq!(data.grid.len(), 8);
         assert!(data.grid.iter().all(|levels| levels.len() == 8));
     }
 
@@ -98,13 +98,13 @@ mod tests {
     fn test_part_1() {
         let data = include_str!("../../data/day_10/test.txt");
         let data = Data::new(data);
-        assert!(part_1(&data) == 36);
+        assert_eq!(part_1(&data), 36);
     }
 
     #[test]
     fn test_part_2() {
         let data = include_str!("../../data/day_10/test.txt");
         let data = Data::new(data);
-        assert!(part_2(&data) == 81);
+        assert_eq!(part_2(&data), 81);
     }
 }

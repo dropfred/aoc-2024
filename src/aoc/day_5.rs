@@ -80,22 +80,22 @@ mod tests {
     fn test_data() {
         let data = include_str!("../../data/day_5/test.txt");
         let data = Data::new(data);
-        assert!(data.updates.len() == 6);
+        assert_eq!(data.updates.len(), 6);
         assert!(data.updates.iter().all(|u| (u.len() & 1) != 0));
-        assert!(data.rules.len() == 6);
+        assert_eq!(data.rules.len(), 6);
     }
 
     #[test]
     fn test_part_1() {
         let data = include_str!("../../data/day_5/test.txt");
         let data = Data::new(data);
-        assert!(part_1(&data) == 143);
+        assert_eq!(part_1(&data), 143);
     }
 
     #[test]
     fn test_part_2() {
         let data = include_str!("../../data/day_5/test.txt");
         let data = Data::new(data);
-        assert!(part_2(&data) == 123);
+        assert_eq!(part_2(&data), 123);
     }
 }

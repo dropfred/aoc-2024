@@ -75,13 +75,13 @@ mod tests {
     fn test_data() {
         let data = include_str!("../../data/day_13/test.txt");
         let data = Data::new(data);
-        assert!(data.games.len() == 4);
+        assert_eq!(data.games.len(), 4);
     }
 
     #[test]
     fn test_part_1() {
         let data = include_str!("../../data/day_13/test.txt");
         let data = Data::new(data);
-        assert!(part_1(&data) == 480);
+        assert_eq!(part_1(&data), 480);
     }
 }
