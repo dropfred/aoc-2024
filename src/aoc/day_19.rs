@@ -1,3 +1,5 @@
+use std::collections::{HashMap, VecDeque};
+
 #[derive(Debug)]
 struct Data {
     patterns: Vec<String>,
@@ -14,35 +16,37 @@ impl Data {
     }
 }
 
-fn part_1(data: &Data) -> u32 {
-    let mut c = 0;
-    for d in &data.designs {
-        let mut ds = Vec::new();
-        ds.push(0);
-        while !ds.is_empty() {
-            let m = ds.pop().unwrap();
-            if m == d.len() {
-                c += 1;
-                break;
-            }
-            let s = &d[m..];
-            for p in &data.patterns {
-                if s.starts_with(p) {
-                    ds.push(m + p.len());
-                }
-            }
+fn count(design: &str, patterns: &Vec<String>) -> usize {
+    fn count(memo: &mut HashMap<usize, usize>, design: &str, patterns: &Vec<String>, s: usize) -> usize {
+        if design.len() == s {
+            1
+        } else if memo.contains_key(&s) {
+            memo[&s]
+        } else {
+            let d = &design[s..];
+            patterns.iter().filter(|p| d.starts_with(*p)).map(|p| {
+                let s = s + p.len();
+                let c = count(memo, design, patterns, s);
+                memo.insert(s, c);
+                c
+            }).sum()
         }
     }
-    c
+    count(&mut HashMap::new(), design, patterns, 0)
 }
 
-fn part_2(data: &Data) -> u32 {
-    todo!("part 2");
+fn part_1(data: &Data) -> usize {
+    data.designs.iter().map(|d| count(d, &data.patterns)).filter(|n| *n > 0).count()
+}
+
+fn part_2(data: &Data) -> usize {
+    data.designs.iter().map(|d| count(d, &data.patterns)).sum()
 }
 
 pub fn solve() {
     let data = include_str!("../../data/day_19/input.txt");
     let data = Data::parse(data).expect("bad input");
+
     println!("part 1: {}", part_1(&data));
     println!("part 2: {}", part_2(&data));
 }
