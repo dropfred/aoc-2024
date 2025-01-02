@@ -1,4 +1,4 @@
-pub mod aoc;
+mod aoc;
 
 fn usage(exe: &str) -> ! {
     use std::path::Path;

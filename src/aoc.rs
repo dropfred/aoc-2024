@@ -1,3 +1,6 @@
+pub mod grid;
+pub mod maze;
+
 pub mod day_1;
 pub mod day_2;
 pub mod day_4;
