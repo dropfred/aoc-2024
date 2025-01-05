@@ -1,14 +1,19 @@
-struct Data {
+struct Puzzle {
     reports: Vec<Vec<u32>>
 }
 
-impl Data {
-    fn new(data: &str) -> Self {
-        let mut reports = Vec::new();
-        for line in data.lines() {
-            reports.push(line.split_ascii_whitespace().map(|s| s.parse::<u32>().unwrap()).collect::<Vec<u32>>());
-        }
-        Data {reports}
+impl Puzzle {
+    fn parse(data: &str) -> Option<Self> {
+        let parse_nums = |s: &str| {
+            s.trim().split_ascii_whitespace().map(|s| s.parse()).collect()
+        };
+        let reports: Result<_, _> = data.lines().map(parse_nums).collect();
+        let reports = reports.ok()?;
+        Some(Puzzle {reports})
+    }
+
+    fn load(data: &str) -> Self {
+        Self::parse(data).expect("valid input")
     }
 }
 
@@ -38,7 +43,7 @@ fn is_safe(levels: &Vec<u32>) -> bool {
     true
 }
 
-fn part_1(data: &Data) -> u32 {
+fn part_1(data: &Puzzle) -> u32 {
     let mut ss = 0;
     for levels in &data.reports {
         if is_safe(levels) {
@@ -48,7 +53,7 @@ fn part_1(data: &Data) -> u32 {
     ss
 }
 
-fn part_2(data: &Data) -> u32 {
+fn part_2(data: &Puzzle) -> u32 {
     let mut ss = 0;
     for levels in &data.reports {
         if is_safe(levels) {
@@ -69,7 +74,7 @@ fn part_2(data: &Data) -> u32 {
 
 pub fn solve() {
     let data = include_str!("../../data/day_2/input.txt");
-    let data = Data::new(data);
+    let data = Puzzle::load(data);
     println!("part 1: {}", part_1(&data));
     println!("part 2: {}", part_2(&data));
 }
@@ -82,20 +87,20 @@ mod tests {
 
     #[test]
     fn test_data() {
-        let data = Data::new(DATA);
+        let data = Puzzle::load(DATA);
         assert_eq!(data.reports.len(), 6);
         assert!(data.reports.iter().all(|levels| levels.len() == 5));
     }
 
     #[test]
     fn test_part_1() {
-        let data = Data::new(DATA);
+        let data = Puzzle::load(DATA);
         assert_eq!(part_1(&data), 2);
     }
 
     #[test]
     fn test_part_2() {
-        let data = Data::new(DATA);
+        let data = Puzzle::load(DATA);
         assert_eq!(part_2(&data), 4);
     }
 }
