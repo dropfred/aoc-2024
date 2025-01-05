@@ -3,27 +3,31 @@ struct Equation {
     values: Vec<u64>
 }
 
-struct Data {
+struct Puzzle {
     equations: Vec<Equation>
 }
 
-impl Data {
-    fn new(data: &str) -> Self {
-        let mut equations: Vec<Equation> = Vec::new();
-        for test in data.trim().lines() {
-            let p = test.find(':').unwrap();
-            let result: u64 = test[0..p].parse().unwrap();
-            let mut values: Vec<u64> = Vec::new();
-            for v in test[p+1..].trim().split(' ') {
-                values.push(v.parse::<u64>().unwrap());
-            }
-            equations.push(Equation {result, values});
-        }
-        Data {equations}
+impl Puzzle {
+    fn parse(data: &str) -> Option<Self> {
+        let parse_equation = |s: &str| {
+            let (result, values) = s.trim().split_once(": ")?;
+            let result = result.parse().ok()?;
+            let values: Option<Vec<_>> = values.split(' ').map(|v| v.parse().ok()).collect();
+            let values = values?;
+            Some(Equation {result, values})
+        };
+        let equations: Option<Vec<_>> = data.trim().lines()
+            .map(parse_equation).collect();
+        let equations = equations?;
+        Some(Puzzle {equations})
+    }
+
+    fn load(data: &str) -> Self {
+        Self::parse(data).expect("valid input")
     }
 }
 
-fn part_1(data: &Data) -> u64 {
+fn part_1(data: &Puzzle) -> u64 {
     let mut total = 0u64;
     for test in &data.equations {
         let ops = 1u64 << (test.values.len() - 1);
@@ -54,7 +58,7 @@ fn part_1(data: &Data) -> u64 {
 //     Concat
 // }
 
-// fn part_2(data: &Data) -> u64 {
+// fn part_2(data: &Puzzle) -> u64 {
 //     let mut total = 0u64;
 //     for test in &data.equations {
 //         let ops = test.values.len() - 1;
@@ -79,7 +83,7 @@ fn part_1(data: &Data) -> u64 {
 
 use std::collections::HashSet;
 
-fn part_2(data: &Data) -> u64 {
+fn part_2(data: &Puzzle) -> u64 {
     let mut total = 0u64;
     for e in &data.equations {
         let vs = e.values[1..].iter().fold(HashSet::from([e.values[0]]), |vs, v| {
@@ -104,7 +108,7 @@ fn part_2(data: &Data) -> u64 {
 
 pub fn solve() {
     let data = include_str!("../../data/day_7/input.txt");
-    let data = Data::new(data);
+    let data = Puzzle::load(data);
     println!("part 1: {}", part_1(&data));
     println!("part 2: {}", part_2(&data));
 }
@@ -116,13 +120,13 @@ mod tests {
 
     #[test]
     fn test_part_1() {
-        let data = Data::new(DATA);
+        let data = Puzzle::load(DATA);
         assert_eq!(part_1(&data), 3749);
     }
 
     #[test]
     fn test_part_2() {
-        let data = Data::new(DATA);
+        let data = Puzzle::load(DATA);
         assert_eq!(part_2(&data), 11387);
     }
 }
