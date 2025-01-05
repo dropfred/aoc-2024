@@ -14,8 +14,8 @@ impl<T: Copy + std::cmp::PartialEq> Grid<T> {
         Self {size, cells}
     }
 
-    pub fn load(data: &Vec<Vec<T>>) -> Self {
-        debug_assert!(!data.is_empty() && data.iter().all(|r| !r.is_empty() && (r.len() == data[0].len())));
+    pub fn from_vec(data: &Vec<Vec<T>>) -> Self {
+        debug_assert!(!data.is_empty() && !data[0].is_empty() && data.iter().skip(1).all(|r| r.len() == data[0].len()));
         let (width, height) = (data[0].len(), data.len());
         let mut cells = Vec::with_capacity(width * height);
         for y in 0..height {
@@ -50,26 +50,30 @@ impl<T: Copy + std::cmp::PartialEq> Grid<T> {
         None
     }
 
-
-    pub fn explore<S: FnMut((usize, usize), T) -> bool>(&self, start: (usize, usize), step: S) -> GridExploreIterator<T, S> {
-        GridExploreIterator::new(self, start, step)
+    pub fn explore<F: FnMut((usize, usize)) -> bool>(&self, start: (usize, usize), filter: F) -> GridExploreIterator<T, F> {
+        GridExploreIterator::new(self, start, filter)
     }
 }
 
 impl<T: Copy + std::cmp::PartialEq + std::str::FromStr + std::fmt::Debug> Grid<T> {
     pub fn parse(data: &str, sep: &str) -> Option<Self> where <T as std::str::FromStr>::Err: std::fmt::Debug {
-        let cells: Vec<Vec<_>> = data.trim().lines().map(|r| {
+        let cells: Result<Vec<Vec<_>>, _> = data.trim().lines().map(|r| {
             if sep.is_empty() {
                 r.trim().chars().map(|c| c.to_string().parse::<T>()).collect()
             } else {
                 r.trim().split(sep).map(|s| s.parse::<T>()).collect()
             }
         }).collect();
-        if cells.is_empty() || cells.iter().any(|r| r.iter().any(|c| c.is_err())) {
-            return None;
+        let cells = cells.ok()?;
+        if !cells.is_empty() && !cells[0].is_empty() && cells.iter().skip(1).all(|r| r.len() == cells[0].len()) {
+            Some(Self::from_vec(&cells))
+        } else {
+            None
         }
-        let cells = cells.into_iter().map(|r| r.into_iter().map(|v| v.unwrap()).collect()).collect();
-        Some(Self::load(&cells))
+    }
+
+    pub fn load(data: &str, sep: &str) -> Self where <T as std::str::FromStr>::Err: std::fmt::Debug {
+        Self::parse(data, sep).expect("valid input")
     }
 }
 
@@ -95,19 +99,19 @@ impl Dir {
     }
 }
 
-pub struct GridExploreIterator<'a, T, S: FnMut((usize, usize), T) -> bool> {
+pub struct GridExploreIterator<'a, T, F: FnMut((usize, usize)) -> bool> {
     grid: &'a Grid<T>,
-    step: S,
+    filter: F,
     positions: VecDeque<((usize, usize), usize)>,
     visited: Vec<u64>
 }
 
-impl<'a, T: Copy + std::cmp::PartialEq, S: FnMut((usize, usize), T) -> bool> GridExploreIterator<'a, T, S> {
-    pub fn new(grid: &'a Grid<T>, start: (usize, usize), step: S) -> Self {
+impl<'a, T: Copy + std::cmp::PartialEq, F: FnMut((usize, usize)) -> bool> GridExploreIterator<'a, T, F> {
+    pub fn new(grid: &'a Grid<T>, start: (usize, usize), filter: F) -> Self {
         let (w, h) = grid.size();
         let positions = VecDeque::new();
         let visited = vec![0; h * (w + 63) / 64];
-        let mut it = GridExploreIterator {grid, step, positions, visited};
+        let mut it = GridExploreIterator {grid, filter, positions, visited};
         it.visit(start, 0);
         it
     }
@@ -119,15 +123,15 @@ impl<'a, T: Copy + std::cmp::PartialEq, S: FnMut((usize, usize), T) -> bool> Gri
         let bx = 1 << (position.0 % 64);
         let v = vy * w64 + vx;
         if (self.visited[v] & bx) == 0 {
-            if (self.step)(position, self.grid.get(position)) {
-                self.visited[v] |= bx;
+            self.visited[v] |= bx;
+            if (self.filter)(position) {
                 self.positions.push_back((position, distance));
             }
         }
     }
 }
 
-impl<'a, T: Copy + std::cmp::PartialEq, S: FnMut((usize, usize), T) -> bool> Iterator for GridExploreIterator<'a, T, S> {
+impl<'a, T: Copy + std::cmp::PartialEq, F: FnMut((usize, usize)) -> bool> Iterator for GridExploreIterator<'a, T, F> {
     type Item = ((usize, usize), usize);
 
     fn next(&mut self) -> Option<Self::Item> {
@@ -149,12 +153,12 @@ impl<'a, T: Copy + std::cmp::PartialEq, S: FnMut((usize, usize), T) -> bool> Ite
     }
 }
 
-impl<> std::fmt::Display for Grid<char> {
+impl std::fmt::Display for Grid<char> {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         let mut nl = false;
         for y in 0..(self.size.1) {
             if nl {
-                writeln!(f, " ")?;
+                writeln!(f, "")?;
             }
             for x in 0..(self.size.0) {
                 write!(f, "{}", self.get((x, y)))?;
@@ -192,7 +196,7 @@ mod tests {
         4 5 6
         7 8 9
         ";
-        let grid: Grid<u8> = Grid::parse(data, " ").unwrap();
+        let grid: Grid<u8> = Grid::load(data, " ");
         assert_eq!(grid.size(), (3, 3));
         assert_eq!(grid.get((0, 0)), 1);
         assert_eq!(grid.get((2, 2)), 9);
@@ -201,7 +205,7 @@ mod tests {
         abc
         def
         ";
-        let grid: Grid<char> = Grid::parse(data, "").unwrap();
+        let grid: Grid<char> = Grid::load(data, "");
         assert_eq!(grid.size(), (3, 2));
 
         let data = "
@@ -209,9 +213,9 @@ mod tests {
         456
         789
         ";
-        let grid: Grid<u8> = Grid::parse(data, "").unwrap();
+        let grid: Grid<u8> = Grid::load(data, "");
         assert_eq!(grid.size(), (3, 3));
-        let grid: Grid<u32> = Grid::parse(data, ",").unwrap();
+        let grid: Grid<u32> = Grid::load(data, ",");
         assert_eq!(grid.size(), (1, 3));
 
         let data = "
@@ -220,5 +224,18 @@ mod tests {
         ";
         let grid: Option<Grid<u8>> = Grid::parse(data, "");
         assert!(grid.is_none());
+    }
+
+
+    #[test]
+    fn test_explore() {
+        let data = "
+        #####
+        #...#
+        #####
+        ";
+        let grid: Grid<char> = Grid::load(data, "");
+        assert_eq!(grid.explore((2, 1), |_| true).count(), 15);
+        assert_eq!(grid.explore((2, 1), |p| grid.get(p) != '#').count(), 3);
     }
 }
