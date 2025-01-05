@@ -37,23 +37,22 @@ impl Maze {
 
     pub fn get_path(&self, begin: (usize, usize), end: (usize, usize), wall: char) -> MazePathIterator {
         let mut distances = Grid::new(self.map.size(), usize::MAX);
-        for (p, d) in self.explore(end, wall) {
+        for (p, d) in self.explore(begin, wall) {
             distances.set(p, d);
         }
         let mut path = Vec::new();
-        if distances.get(begin) != usize::MAX {
+        if distances.get(end) != usize::MAX {
             let mut i = 0;
-            for (p, d) in self.explore(begin, wall) {
+            for (p, d) in self.explore(end, wall) {
                 if d == i {
                     path.push(p);
-                    if p == end {
+                    if p == begin {
                         break;
                     }
                     i += 1;
                 }
             }
         }
-        path.reverse();
         MazePathIterator {path}
     }
 
