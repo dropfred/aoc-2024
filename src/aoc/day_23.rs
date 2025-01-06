@@ -51,11 +51,11 @@ fn get_trios(puzzle: &Puzzle) -> Vec<(u16, u16, u16)> {
     ts
 }
 
-// fn print_computer(computer: u16) {
-//     let (a, b) = (computer & 0xff, computer >> 8);
-//     let (a, b) = (a as u8  as char, b as u8 as char);
-//     print!("{b}{a}");
-// }
+fn get_computer_string(computer: u16) -> String {
+    let (a, b) = (computer & 0xff, computer >> 8);
+    let (a, b) = (a as u8  as char, b as u8 as char);
+    format!("{b}{a}").to_string()
+}
 
 fn part_1(puzzle: &Puzzle) -> usize {
     let ts = get_trios(puzzle);
@@ -67,8 +67,25 @@ fn part_1(puzzle: &Puzzle) -> usize {
     ts
 }
 
-fn part_2(puzzle: &Puzzle) -> usize {
-    todo!("part 2");
+fn part_2(puzzle: &Puzzle) -> String {
+    let computers: HashSet<_> = puzzle.connections.iter().flat_map(|(c1, c2)| [*c1, *c2]).collect();
+    let connections: HashSet<_> = puzzle.connections.iter().map(|(c1, c2)| (*c1, *c2)).collect();
+    let mut nets: Vec<HashSet<_>> = Vec::new();
+    for computer in computers {
+        for net in nets.iter_mut() {
+            if net.iter().all(|c| {
+                let c = if *c < computer {(*c, computer)} else {(computer, *c)};
+                connections.contains(&c)
+            }) {
+                net.insert(computer);
+            }
+        }
+        nets.push(HashSet::from([computer]));
+    }
+    let mut net: Vec<_> = nets.iter().max_by(|n1, n2| n1.len().partial_cmp(&n2.len()).unwrap()).unwrap().into_iter().collect();
+    net.sort();
+    let password: String = (0..(net.len())).zip(net.into_iter()).map(|(i, n)| if i > 0 {format!(",{}", get_computer_string(*n))} else {format!("{}", get_computer_string(*n))}).collect();
+    password
 }
 
 pub fn solve() {
@@ -106,5 +123,8 @@ mod tests {
 
     #[test]
     fn test_part_2() {
+        let data = include_str!("../../data/day_23/test.txt");
+        let puzzle = Puzzle::load(data);
+        assert_eq!(part_2(&puzzle), "co,de,ka,ta");
     }
 }
