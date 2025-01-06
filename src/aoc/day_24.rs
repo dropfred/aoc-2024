@@ -29,21 +29,27 @@ impl Puzzle {
         let data = data.trim().replace("\r", "");
         let parse_wire = |s: &str| {
             let (name, state) = s.split_once(": ")?;
-            let name = Self::encode_name(&name.to_string());
+            let name = Self::encode_name(name);
             let state = if state == "0" {false} else if state == "1" {true} else {return None;};
             Some(Wire {name, state})
         };
         let parse_gate = |s: &str| {
             let (aob, output) = s.split_once(" -> ")?;
-            let output = Self::encode_name(&output.to_string());
+            let output = Self::encode_name(output);
             let mut aob = aob.split(" ");
             let a = aob.next()?;
             let op = aob.next()?;
             let b = aob.next()?;
             if aob.next().is_some() {return None;}
-            let a = Self::encode_name(&a.to_string());
-            let b = Self::encode_name(&b.to_string());
-            let op = if op == "AND" {Op::And} else if op == "OR" {Op::Or} else if op == "XOR" {Op::Xor} else {return None;};
+            if (a.len() != 3) || (a.len() != 3) {return None;}
+            let a = Self::encode_name(a);
+            let b = Self::encode_name(b);
+            let op = match op {
+                "AND" => Op::And,
+                "OR"  => Op::Or,
+                "XOR" => Op::Xor,
+                _ => return None
+            };
             let inputs = (a, b);
             Some(Gate {op, inputs, output})
         };
@@ -62,9 +68,9 @@ impl Puzzle {
     fn encode_name(name: &str) -> u32 {
         let mut name = name.bytes();
         let (a, b, c) = (
-            name.next().unwrap_or(0) as u32,
-            name.next().unwrap_or(0) as u32,
-            name.next().unwrap_or(0) as u32);
+            name.next().unwrap() as u32,
+            name.next().unwrap() as u32,
+            name.next().unwrap() as u32);
         (a << 16) | (b << 8) | c
     }
 
