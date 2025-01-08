@@ -31,33 +31,30 @@ impl Maze {
         &self.map
     }
 
-    pub fn explore(&self, start: (usize, usize), wall: char) -> MazeExploreIterator<impl FnMut((usize, usize)) -> bool + '_> {
-        MazeExploreIterator::new(self.get_map(), start, move |p| self.get_map().get(p) != wall)
+    pub fn explore(&self, start: (usize, usize), wall: char) -> MazeExploreIterator<impl FnMut((usize, usize), (usize, usize), usize) -> bool + '_> {
+        MazeExploreIterator::new(self.get_map(), start, move |p, _, _| self.get_map().get(p) != wall)
     }
 
-    pub fn get_path(&self, begin: (usize, usize), end: (usize, usize), wall: char) -> MazePathIterator {
-        let mut distances = Grid::new(self.map.size(), usize::MAX);
-        for (p, d) in self.explore(begin, wall) {
-            distances.set(p, d);
-        }
-        let mut path = Vec::new();
-        if distances.get(end) != usize::MAX {
-            let mut i = 0;
-            for (p, d) in self.explore(end, wall) {
-                if d == i {
+    pub fn get_path(&self, begin: (usize, usize), end: (usize, usize), wall: char) -> Option<MazePathIterator> {
+        let mut pps:Grid<(usize, usize)> = Grid::new(self.map.size(), (0, 0));
+        for (p, pp, d) in self.explore(begin, wall) {
+            pps.set(p, pp);
+            if p == end {
+                let mut path = Vec::new();
+                let mut p = p;
+                loop {
                     path.push(p);
-                    if p == begin {
-                        break;
-                    }
-                    i += 1;
+                    if p == begin {break;}
+                    p = pps.get(p);
                 }
+                return Some(MazePathIterator {path});
             }
         }
-        MazePathIterator {path}
+        None
     }
 
     pub fn get_distance(&self, begin: (usize, usize), end: (usize, usize), wall: char) -> Option<usize> {
-        for (p, d) in self.explore(begin, wall) {
+        for (p, _, d) in self.explore(begin, wall) {
             if p == end {
                 return Some(d)
             }
@@ -139,7 +136,7 @@ mod tests {
         ";
         let maze = Maze::load(data);
         let map = &maze.get_map();
-        let mut path = maze.get_path(map.find('B').unwrap(), map.find('E').unwrap(), '#');
+        let mut path = maze.get_path(map.find('B').unwrap(), map.find('E').unwrap(), '#').unwrap();
         assert_eq!(path.next(), Some((1, 1)));
         assert_eq!(path.next(), Some((2, 1)));
         assert_eq!(path.next(), None);

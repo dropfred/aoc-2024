@@ -50,7 +50,7 @@ impl<T: Copy + std::cmp::PartialEq> Grid<T> {
         None
     }
 
-    pub fn explore<F: FnMut((usize, usize)) -> bool>(&self, start: (usize, usize), filter: F) -> GridExploreIterator<T, F> {
+    pub fn explore<F: FnMut((usize, usize), (usize, usize), usize) -> bool>(&self, start: (usize, usize), filter: F) -> GridExploreIterator<T, F> {
         GridExploreIterator::new(self, start, filter)
     }
 }
@@ -99,24 +99,24 @@ impl Dir {
     }
 }
 
-pub struct GridExploreIterator<'a, T, F: FnMut((usize, usize)) -> bool> {
+pub struct GridExploreIterator<'a, T, F: FnMut((usize, usize), (usize, usize), usize) -> bool> {
     grid: &'a Grid<T>,
     filter: F,
-    positions: VecDeque<((usize, usize), usize)>,
+    positions: VecDeque<((usize, usize), (usize, usize), usize)>,
     visited: Vec<u64>
 }
 
-impl<'a, T: Copy + std::cmp::PartialEq, F: FnMut((usize, usize)) -> bool> GridExploreIterator<'a, T, F> {
+impl<'a, T: Copy + std::cmp::PartialEq, F: FnMut((usize, usize), (usize, usize), usize) -> bool> GridExploreIterator<'a, T, F> {
     pub fn new(grid: &'a Grid<T>, start: (usize, usize), filter: F) -> Self {
         let (w, h) = grid.size();
         let positions = VecDeque::new();
         let visited = vec![0; h * (w + 63) / 64];
         let mut it = GridExploreIterator {grid, filter, positions, visited};
-        it.visit(start, 0);
+        it.visit(start, start, 0);
         it
     }
 
-    fn visit(&mut self, position: (usize, usize), distance: usize) {
+    fn visit(&mut self, position: (usize, usize), pposition: (usize, usize), distance: usize) {
         let (w, _) = self.grid.size();
         let w64 = (w + 63) / 64;
         let (vx, vy) = (position.0 / 64, position.1);
@@ -124,18 +124,18 @@ impl<'a, T: Copy + std::cmp::PartialEq, F: FnMut((usize, usize)) -> bool> GridEx
         let v = vy * w64 + vx;
         if (self.visited[v] & bx) == 0 {
             self.visited[v] |= bx;
-            if (self.filter)(position) {
-                self.positions.push_back((position, distance));
+            if (self.filter)(position, pposition, distance) {
+                self.positions.push_back((position, pposition, distance));
             }
         }
     }
 }
 
-impl<'a, T: Copy + std::cmp::PartialEq, F: FnMut((usize, usize)) -> bool> Iterator for GridExploreIterator<'a, T, F> {
-    type Item = ((usize, usize), usize);
+impl<'a, T: Copy + std::cmp::PartialEq, F: FnMut((usize, usize), (usize, usize), usize) -> bool> Iterator for GridExploreIterator<'a, T, F> {
+    type Item = ((usize, usize), (usize, usize), usize);
 
     fn next(&mut self) -> Option<Self::Item> {
-        if let Some((position, distance)) = self.positions.pop_front() {
+        if let Some((position, pposition, distance)) = self.positions.pop_front() {
             let (w, h) = {let (w, h) = self.grid.size(); (w as i32, h as i32)};
             let (x, y) = (position.0 as i32, position.1 as i32);
             for d in Dir::all() {
@@ -143,10 +143,10 @@ impl<'a, T: Copy + std::cmp::PartialEq, F: FnMut((usize, usize)) -> bool> Iterat
                 let (x, y) = (x + dx, y + dy);
                 if (x >= 0) && (x < w) && (y >= 0) && (y < h) {
                     let p = (x as usize, y as usize);
-                    self.visit(p, distance + 1);
+                    self.visit(p, position, distance + 1);
                 }
             }
-            Some((position, distance))
+            Some((position, pposition, distance))
         } else {
             None
         }
@@ -235,7 +235,7 @@ mod tests {
         #####
         ";
         let grid: Grid<char> = Grid::load(data, "");
-        assert_eq!(grid.explore((2, 1), |_| true).count(), 15);
-        assert_eq!(grid.explore((2, 1), |p| grid.get(p) != '#').count(), 3);
+        assert_eq!(grid.explore((2, 1), |_, _, _| true).count(), 15);
+        assert_eq!(grid.explore((2, 1), |p, _, _| grid.get(p) != '#').count(), 3);
     }
 }

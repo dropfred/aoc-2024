@@ -18,18 +18,18 @@ impl Puzzle {
 
 fn get_cheats(maze: &Maze, begin: (usize, usize), end: (usize, usize), wall: char) -> Vec<((usize, usize), usize)> {
     let mut distances = Grid::new(maze.get_map().size(), usize::MAX);
-    for (p, d) in maze.explore(end, wall) {
+    for (p, _, d) in maze.explore(end, wall) {
         distances.set(p, d);
     }
     let distance = distances.get(begin);
     let mut cheats = HashMap::new();
-    for (d, p) in maze.get_path(begin, end, wall).enumerate() {
-        for (cp, cd) in maze.get_map().explore(p, |_| true).skip(1) {
+    for (d, p) in maze.get_path(begin, end, wall).unwrap().enumerate() {
+        for (cp, _, cd) in maze.get_map().explore(p, |_, _, _| true).skip(1) {
             if cd > 1 {break;}
             if maze.get_map().get(cp) != wall {continue;}
             if !cheats.contains_key(&cp) {
                 let mut ms: usize = 0;
-                for (cp, cd) in maze.get_map().explore(cp, |_| true).skip(1) {
+                for (cp, _, cd) in maze.get_map().explore(cp, |_, _, _| true).skip(1) {
                     if cd > 1 {break;}
                     let ed = distances.get(cp);
                     if ed != usize::MAX {
