@@ -55,6 +55,13 @@ impl<T: Copy + std::cmp::PartialEq> Grid<T> {
     }
 }
 
+impl<T: Default + Copy + std::cmp::PartialEq> Grid<T> {
+
+    pub fn new_default(size: (usize, usize)) -> Self {
+        Self::new(size, Default::default())
+    }
+}
+
 impl<T: Copy + std::cmp::PartialEq + std::str::FromStr + std::fmt::Debug> Grid<T> {
     pub fn parse(data: &str, sep: &str) -> Option<Self> where <T as std::str::FromStr>::Err: std::fmt::Debug {
         let cells: Result<Vec<Vec<_>>, _> = data.trim().lines().map(|r| {
