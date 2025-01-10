@@ -21,55 +21,29 @@ fn is_safe(levels: &Vec<u32>) -> bool {
     if levels.len() < 2 {
         return true;
     }
-    let mut inc = None;
-    for i in 1..levels.len() {
-        let lvl0 = levels[i - 1] as i32;
-        let lvl1 = levels[i] as i32;
-        let d = lvl1 - lvl0;
-        if (d == 0) || (d.abs() > 3) {
-            return false;
-        }
-        match inc {
-            Some(b) => {
-                if (d > 0) != b {
-                    return false;
-                }
-            },
-            None => {
-                inc = Some(d > 0);
-            }
-        }
+    let inc = (levels[1] as i32 - levels[0] as i32) > 0;
+    if levels.windows(2).any(|ls| {
+        let d = ls[1] as i32 - ls[0] as i32;
+        (d == 0) || (d.abs() > 3) || ((d > 0) != inc)
+    }) {
+        return false;
     }
     true
 }
 
-fn part_1(data: &Puzzle) -> u32 {
-    let mut ss = 0;
-    for levels in &data.reports {
-        if is_safe(levels) {
-            ss += 1;
-        }
-    }
-    ss
+fn part_1(data: &Puzzle) -> usize {
+    data.reports.iter().filter(|ls| is_safe(ls)).count()
 }
 
-fn part_2(data: &Puzzle) -> u32 {
-    let mut ss = 0;
-    for levels in &data.reports {
-        if is_safe(levels) {
-            ss += 1;
-        } else {
-            for i in 0..levels.len() {
-                let mut vs = levels.clone();
-                vs.remove(i);
-                if is_safe(&vs) {
-                    ss += 1;
-                    break;
-                }
-            }
+fn part_2(data: &Puzzle) -> usize {
+    data.reports.iter().filter(|ls| {
+        is_safe(ls) || {
+            (0..ls.len()).any(|r| {
+                let vs = (0..r).chain((r + 1)..ls.len()).map(|i| ls[i]).collect();
+                is_safe(&vs)
+            })
         }
-    }
-    ss
+    }).count()
 }
 
 pub(crate) fn solve() {
