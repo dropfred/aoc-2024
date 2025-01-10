@@ -16,60 +16,57 @@ impl Puzzle {
     }
 }
 
-fn get_cheats(maze: &Maze, begin: (usize, usize), end: (usize, usize), wall: char) -> Vec<((usize, usize), usize)> {
+fn get_cheats(maze: &Maze, cheat: usize, save: usize) -> Option<Vec<(usize, ((usize, usize), (usize, usize)))>> {
+    let map = maze.get_map();
+    let begin = map.find('S')?;
+    let end = map.find('E')?;
+
     let mut distances = Grid::new(maze.get_map().size(), usize::MAX);
-    for (p, _, d) in maze.explore(end, wall) {
+    for (p, _, d) in maze.explore(end, '#') {
         distances.set(p, d);
     }
     let distance = distances.get(begin);
+
     let mut cheats = HashMap::new();
-    for (d, p) in maze.get_path(begin, end, wall).unwrap().enumerate() {
-        for (cp, _, cd) in maze.get_map().explore(p, |_, _, _| true).skip(1) {
-            if cd > 1 {break;}
-            if maze.get_map().get(cp) != wall {continue;}
-            if !cheats.contains_key(&cp) {
-                let mut ms: usize = 0;
-                for (cp, _, cd) in maze.get_map().explore(cp, |_, _, _| true).skip(1) {
-                    if cd > 1 {break;}
-                    let ed = distances.get(cp);
-                    if ed != usize::MAX {
-                        let d = d + cd + ed + 1;
-                        if d < distance {
-                            ms = std::cmp::max(ms, distance - d);
-                        }
+    for (d, p) in maze.get_path(begin, end, '#')?.enumerate() {
+        for (cp, _, cd) in map.explore(p, |_, _, _| true).skip(1) {
+            if cd > cheat {break;}
+            if (cd == 1) && map.get(cp) != '#' {continue;}
+            if !cheats.contains_key(&(p, cp)) {
+                let de = distances.get(cp);
+                if de != usize::MAX {
+                    let d = d + cd + de;
+                    if distance > d {
+                        cheats.insert((p, cp), distance - d);
                     }
                 }
-                cheats.insert(cp, ms);
             }
         }
     }
-    cheats.into_iter().map(|((x, y), s)| ((x as usize, y as usize), s))
-                      .filter(|(_, s)| *s > 0)
-                      .collect()
+    let mut cheats: Vec<_> = cheats.into_iter()
+        .filter(|(_, s)| *s >= save)
+        .map(|(pcp, s)| (s, pcp))
+        .collect();
+    cheats.sort();
+    Some(cheats)
 }
 
-fn solve_part_1(puzzle: &Puzzle, min: usize) -> usize {
-    let maze = &puzzle.maze;
-    let map = maze.get_map();
-    let begin = map.find('S').unwrap();
-    let end = map.find('E').unwrap();
-    let cheats = get_cheats(maze, begin, end, '#');
-    cheats.into_iter().filter(|(_, s)| *s >= min).count()
+fn solve_part_1(puzzle: &Puzzle) -> usize {
+    let cheats = get_cheats(&puzzle.maze, 2, 100).expect("solvable puzzle");
+    cheats.len()
 }
 
-fn part_1(puzzle: &Puzzle) -> usize {
-    solve_part_1(puzzle, 100)
+fn solve_part_2(puzzle: &Puzzle) -> usize {
+    let cheats = get_cheats(&puzzle.maze, 20, 100).expect("solvable puzzle");
+    cheats.len()
+
 }
 
-fn part_2(puzzle: &Puzzle) -> (u32, u32) {
-    todo!("part 2");
-}
-
-pub fn solve() {
+pub(crate) fn solve() {
     let puzzle = include_str!("../../data/day_20/input.txt");
     let puzzle = Puzzle::load(puzzle);
-    println!("part 1: {}", part_1(&puzzle));
-    println!("part 2: {:?}", part_2(&puzzle));
+    println!("part 1: {}", solve_part_1(&puzzle));
+    println!("part 2: {:?}", solve_part_2(&puzzle));
 }
 
 #[cfg(test)]
@@ -77,22 +74,20 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_part_1() {
+    fn test_part_get_cheats() {
         let puzzle = include_str!("../../data/day_20/test.txt");
         let puzzle = Puzzle::load(puzzle);
-        assert_eq!(solve_part_1(&puzzle, 1), 44);
         let maze = &puzzle.maze;
-        let begin = maze.get_map().find('S').unwrap();
-        let end = maze.get_map().find('E').unwrap();
-        let cheats = get_cheats(maze, begin, end, '#');
-        let mut map: HashMap<usize, usize> = HashMap::new();
-        for (_, s) in cheats {
-            let c = map.entry(s).or_insert(0);
-            *c += 1;
+
+        let cheats = get_cheats(maze, 2, 1).unwrap();
+        let mut save = HashMap::new();
+        for (s, _) in cheats {
+            let ts = save.entry(s).or_insert(0);
+            *ts += 1;
         }
-        let mut cheats: Vec<_> = map.into_iter().collect();
-        cheats.sort();
-        let mut i = cheats.into_iter();
+        let mut save: Vec<_> = save.into_iter().map(|(s, t)| (s, t)).collect();
+        save.sort();
+        let mut i = save.into_iter();
         assert_eq!(i.next(), Some((2, 14)));
         assert_eq!(i.next(), Some((4, 14)));
         assert_eq!(i.next(), Some((6, 2)));
@@ -105,5 +100,29 @@ mod tests {
         assert_eq!(i.next(), Some((40, 1)));
         assert_eq!(i.next(), Some((64, 1)));
         assert_eq!(i.next(), None);
+
+        let cheats = get_cheats(maze, 20, 50).unwrap();
+        let mut save = HashMap::new();
+        for (s, _) in cheats {
+            let ts = save.entry(s).or_insert(0);
+            *ts += 1;
+        }
+        let mut save: Vec<_> = save.into_iter().map(|(s, t)| (s, t)).collect();
+        save.sort();
+        let mut i = save.into_iter();
+        assert_eq!(i.next(), Some((50, 32)));
+        assert_eq!(i.next(), Some((52, 31)));
+        assert_eq!(i.next(), Some((54, 29)));
+        assert_eq!(i.next(), Some((56, 39)));
+        assert_eq!(i.next(), Some((58, 25)));
+        assert_eq!(i.next(), Some((60, 23)));
+        assert_eq!(i.next(), Some((62, 20)));
+        assert_eq!(i.next(), Some((64, 19)));
+        assert_eq!(i.next(), Some((66, 12)));
+        assert_eq!(i.next(), Some((68, 14)));
+        assert_eq!(i.next(), Some((70, 12)));
+        assert_eq!(i.next(), Some((72, 22)));
+        assert_eq!(i.next(), Some((74, 4)));
+        assert_eq!(i.next(), Some((76, 3)));
     }
 }
