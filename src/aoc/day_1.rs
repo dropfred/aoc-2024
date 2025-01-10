@@ -8,8 +8,8 @@ impl Puzzle {
     fn parse(data: &str) -> Option<Self> {
         let parse_locations = |s: &str| {
             let mut vs = s.split_ascii_whitespace();
-            let v0 = vs.next()?.parse::<u32>().ok()?;
-            let v1 = vs.next()?.parse::<u32>().ok()?;
+            let v0 = vs.next()?.parse().ok()?;
+            let v1 = vs.next()?.parse().ok()?;
             if vs.next().is_some() {return None;}
             Some((v0, v1))
         };
@@ -24,15 +24,10 @@ impl Puzzle {
 }
 
 fn part_1(puzzle: &Puzzle) -> u32 {
-    let mut v0s = Vec::new();
-    let mut v1s = Vec::new();
-    for (v0, v1) in &puzzle.locations {
-        v0s.push(v0);
-        v1s.push(v1);
-    };
+    let (mut v0s, mut v1s): (Vec<_>, Vec<_>) = puzzle.locations.iter().cloned().unzip();
     v0s.sort();
     v1s.sort();
-    v0s.into_iter().zip(v1s.into_iter()).map(|(v1, v2)| if v1 > v2 {v1 - v2} else {v2 - v1}).sum()
+    v0s.into_iter().zip(v1s.into_iter()).map(|(v0, v1)| if v0 > v1 {v0 - v1} else {v1 - v0}).sum()
 }
 
 fn part_2(puzzle: &Puzzle) -> u32 {
