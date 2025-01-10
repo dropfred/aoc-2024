@@ -123,7 +123,7 @@ fn part_2(data: &Data) -> u32 {
     get_regions(data).iter().map(|r| r.area * r.edges).sum()
 }
 
-pub fn solve() {
+pub(crate) fn solve() {
     let data = include_str!("../../data/day_12/input.txt");
     let data = Data::load(data);
     println!("part 1: {}", part_1(&data));

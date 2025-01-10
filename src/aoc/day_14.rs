@@ -86,7 +86,7 @@ fn part_2(data: &Data, size: (i32, i32)) -> u32 {
     0
 }
 
-pub fn solve() {
+pub(crate) fn solve() {
     let data = include_str!("../../data/day_14/input.txt");
     let data = Data::parse(data);
     println!("part 1: {}", part_1(&data));

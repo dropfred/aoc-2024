@@ -88,7 +88,7 @@ fn part_2(puzzle: &Puzzle) -> String {
     password
 }
 
-pub fn solve() {
+pub(crate) fn solve() {
     let data = include_str!("../../data/day_23/input.txt");
     let puzzle = Puzzle::load(data);
     println!("part 1: {}", part_1(&puzzle));

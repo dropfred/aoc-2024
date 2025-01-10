@@ -65,7 +65,7 @@ fn part_2(data: &Data) -> u64 {
     checksum(&fs)
 }
 
-pub fn solve() {
+pub(crate) fn solve() {
     let data = include_str!("../../data/day_9/input.txt");
     let data = Data::new(data);
     println!("part 1: {}", part_1(&data));

@@ -118,7 +118,7 @@ fn part_2(data: &mut Data) -> u32 {
     total
 }
 
-pub fn solve() {
+pub(crate) fn solve() {
     let data = include_str!("../../data/day_6/input.txt");
     let mut data = Data::new(data);
     let start = data.position;

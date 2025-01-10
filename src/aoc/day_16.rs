@@ -113,7 +113,7 @@ fn part_2(data: &Data) -> u32 {
     todo!("part 2");
 }
 
-pub fn solve() {
+pub(crate) fn solve() {
     let data = include_str!("../../data/day_16/test_1.txt");
     let data = Data::parse(data);
     println!("{data}");

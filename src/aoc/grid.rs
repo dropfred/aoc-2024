@@ -8,14 +8,14 @@ pub struct Grid<T> {
 
 impl<T: Copy + std::cmp::PartialEq> Grid<T> {
     pub fn new(size: (usize, usize), e: T) -> Self {
-        let s = (size.0 * size.1);
+        let s = size.0 * size.1;
         assert!(s > 0);
         let cells = vec![e; s];
         Self {size, cells}
     }
 
     pub fn from_vec(data: &Vec<Vec<T>>) -> Self {
-        debug_assert!(!data.is_empty() && !data[0].is_empty() && data.iter().skip(1).all(|r| r.len() == data[0].len()));
+        assert!(!data.is_empty() && !data[0].is_empty() && data.iter().skip(1).all(|r| r.len() == data[0].len()));
         let (width, height) = (data[0].len(), data.len());
         let mut cells = Vec::with_capacity(width * height);
         for y in 0..height {
@@ -59,9 +59,9 @@ impl<T: Copy + std::cmp::PartialEq + std::str::FromStr + std::fmt::Debug> Grid<T
     pub fn parse(data: &str, sep: &str) -> Option<Self> where <T as std::str::FromStr>::Err: std::fmt::Debug {
         let cells: Result<Vec<Vec<_>>, _> = data.trim().lines().map(|r| {
             if sep.is_empty() {
-                r.trim().chars().map(|c| c.to_string().parse::<T>()).collect()
+                r.trim().chars().map(|c| T::from_str(&c.to_string())).collect()
             } else {
-                r.trim().split(sep).map(|s| s.parse::<T>()).collect()
+                r.trim().split(sep).map(|s| T::from_str(&s)).collect()
             }
         }).collect();
         let cells = cells.ok()?;
@@ -76,6 +76,38 @@ impl<T: Copy + std::cmp::PartialEq + std::str::FromStr + std::fmt::Debug> Grid<T
         Self::parse(data, sep).expect("valid input")
     }
 }
+
+impl std::fmt::Display for Grid<char> {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        let mut nl = false;
+        for y in 0..(self.size.1) {
+            if nl {
+                writeln!(f, "")?;
+            }
+            for x in 0..(self.size.0) {
+                write!(f, "{}", self.get((x, y)))?;
+            }
+            nl = true;
+        }
+        Ok(())
+    }
+}
+
+// impl<T: std::fmt::Display> std::fmt::Display for Grid<T> {
+//     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+//         let mut nl = false;
+//         for y in 0..(self.height) {
+//             if nl {
+//                 writeln!(f, "")?;
+//             }
+//             for x in 0..(self.width) {
+//                 write!(f, "{}", self.get(x, y))?;
+//             }
+//             nl = true;
+//         }
+//         Ok(())
+//     }
+// }
 
 enum Dir {
     East,
@@ -152,38 +184,6 @@ impl<'a, T: Copy + std::cmp::PartialEq, F: FnMut((usize, usize), (usize, usize),
         }
     }
 }
-
-impl std::fmt::Display for Grid<char> {
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        let mut nl = false;
-        for y in 0..(self.size.1) {
-            if nl {
-                writeln!(f, "")?;
-            }
-            for x in 0..(self.size.0) {
-                write!(f, "{}", self.get((x, y)))?;
-            }
-            nl = true;
-        }
-        Ok(())
-    }
-}
-
-// impl<T: std::fmt::Display> std::fmt::Display for Grid<T> {
-//     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-//         let mut nl = false;
-//         for y in 0..(self.height) {
-//             if nl {
-//                 writeln!(f, "")?;
-//             }
-//             for x in 0..(self.width) {
-//                 write!(f, "{}", self.get(x, y))?;
-//             }
-//             nl = true;
-//         }
-//         Ok(())
-//     }
-// }
 
 #[cfg(test)]
 mod tests {

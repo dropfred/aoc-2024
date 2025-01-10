@@ -190,7 +190,7 @@ fn part_2() -> u64 {
     solve_part_2(&computer).expect("solvable puzzle")
 }
 
-pub fn solve() {
+pub(crate) fn solve() {
     println!("part 1: {}", part_1());
     println!("part 2: {}", part_2());
 }

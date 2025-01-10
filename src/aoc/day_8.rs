@@ -75,7 +75,7 @@ fn part_2(data: &Data) -> u32 {
     anti_nodes.len() as u32
 }
 
-pub fn solve() {
+pub(crate) fn solve() {
     let data = include_str!("../../data/day_8/input.txt");
     let data = Data::new(data);
     println!("part 1: {}", part_1(&data));

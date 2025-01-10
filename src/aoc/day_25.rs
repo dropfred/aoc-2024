@@ -85,7 +85,7 @@ fn solve_part_2(puzzle: &Puzzle) -> u32 {
     todo!("part 2")
 }
 
-pub fn solve() {
+pub(crate) fn solve() {
     let data = include_str!("../../data/day_25/input.txt");
     let puzzle = Puzzle::load(data);
     println!("part 1: {}", solve_part_1(&puzzle));

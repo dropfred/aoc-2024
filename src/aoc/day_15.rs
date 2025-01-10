@@ -106,7 +106,7 @@ fn part_2(data: &Data) -> u32 {
     // }).map(|s: String| s.chars().collect()).collect();
 }
 
-pub fn solve() {
+pub(crate) fn solve() {
     let data = include_str!("../../data/day_15/input.txt");
     let data = Data::parse(data);
     println!("part 1: {}", part_1(&data));

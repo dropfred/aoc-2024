@@ -72,7 +72,7 @@ fn part_2(data: &Puzzle) -> u32 {
     ss
 }
 
-pub fn solve() {
+pub(crate) fn solve() {
     let data = include_str!("../../data/day_2/input.txt");
     let data = Puzzle::load(data);
     println!("part 1: {}", part_1(&data));

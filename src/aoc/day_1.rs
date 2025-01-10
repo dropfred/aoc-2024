@@ -49,7 +49,7 @@ fn part_2(puzzle: &Puzzle) -> u32 {
     distance
 }
 
-pub fn solve() {
+pub(crate) fn solve() {
     let data = include_str!("../../data/day_1/input.txt");
     let puzzle = Puzzle::load(data);
     println!("part 1: {}", part_1(&puzzle));

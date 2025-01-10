@@ -8,7 +8,7 @@ fn part_2(puzzle: &Puzzle) -> usize {
     todo!("part 2");
 }
 
-pub fn solve() {
+pub(crate) fn solve() {
     let puzzle = Puzzle {};
     part_1(&puzzle);
     part_2(&puzzle);

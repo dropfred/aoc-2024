@@ -60,7 +60,7 @@ fn part_2(data: &Data) -> i64 {
     }).sum()
 }
 
-pub fn solve() {
+pub(crate) fn solve() {
     let data = include_str!("../../data/day_13/input.txt");
     let data = Data::new(data);
     println!("part 1: {}", part_1(&data));

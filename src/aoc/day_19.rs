@@ -43,7 +43,7 @@ fn part_2(data: &Data) -> usize {
     data.designs.iter().map(|d| count(d, &data.patterns)).sum()
 }
 
-pub fn solve() {
+pub(crate) fn solve() {
     let data = include_str!("../../data/day_19/input.txt");
     let data = Data::parse(data).expect("bad input");
 

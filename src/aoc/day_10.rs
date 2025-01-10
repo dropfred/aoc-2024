@@ -75,7 +75,7 @@ fn part_2(data: &Data) -> u32 {
     return total;
 }
 
-pub fn solve() {
+pub(crate) fn solve() {
     let data = include_str!("../../data/day_10/input.txt");
     let data = Data::new(data);
     println!("part 1: {}", part_1(&data));
