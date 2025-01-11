@@ -1,6 +1,38 @@
+use std::collections::HashSet;
+
+enum Op {
+    Add,
+    Mul,
+    Concat
+}
+
 struct Equation {
     result: u64,
-    values: Vec<u64>
+    numbers: Vec<u64>
+}
+
+impl Equation {
+    fn is_valid<const NOPS: usize>(&self, ops: &[Op; NOPS]) -> bool {
+        if self.numbers.is_empty() {
+            return false;
+        }
+        let mut ts = HashSet::from([self.numbers[0]]);
+        for n in self.numbers.iter().skip(1) {
+            ts = ts.iter().flat_map(|t| {
+                ops.iter()
+                    .map(move |op| {
+                        match op {
+                            Op::Add => t + n,
+                            Op::Mul => t * n,
+                            Op::Concat => (t * 10u64.pow(n.ilog10() + 1)) + n
+                        }
+                    })
+                    .filter(|t| *t <= self.result)
+            }).collect();
+            if ts.is_empty() {return false;}
+        }
+        ts.into_iter().filter(|t| *t == self.result).count() != 0
+    }
 }
 
 struct Puzzle {
@@ -10,14 +42,13 @@ struct Puzzle {
 impl Puzzle {
     fn parse(data: &str) -> Option<Self> {
         let parse_equation = |s: &str| {
-            let (result, values) = s.trim().split_once(": ")?;
+            let (result, numbers) = s.trim().split_once(": ")?;
             let result = result.parse().ok()?;
-            let values: Option<Vec<_>> = values.split(' ').map(|v| v.parse().ok()).collect();
-            let values = values?;
-            Some(Equation {result, values})
+            let numbers: Option<Vec<_>> = numbers.split(' ').map(|v| v.parse().ok()).collect();
+            let numbers = numbers?;
+            Some(Equation {result, numbers})
         };
-        let equations: Option<Vec<_>> = data.trim().lines()
-            .map(parse_equation).collect();
+        let equations: Option<Vec<_>> = data.trim().lines().map(parse_equation).collect();
         let equations = equations?;
         Some(Puzzle {equations})
     }
@@ -27,90 +58,25 @@ impl Puzzle {
     }
 }
 
-fn part_1(data: &Puzzle) -> u64 {
-    let mut total = 0u64;
-    for test in &data.equations {
-        let ops = 1u64 << (test.values.len() - 1);
-        for ops in 0..ops {
-            let mut t = test.values[0];
-            for (i, v) in (&test.values[1..]).iter().enumerate() {
-                if (ops & (1u64 << i)) == 0 {
-                    t += v;
-                } else {
-                    t *= v;
-                }
-                if t > test.result {break;}
-            }
-            if t == test.result {
-                total += test.result;
-                break;
-            }
-        }
-    }
-    total
+fn part_1(puzzle: &Puzzle) -> u64 {
+    puzzle.equations.iter()
+        .filter(|e| e.is_valid(&[Op::Add, Op::Mul]))
+        .map(|e| e.result)
+        .sum()
 }
 
-// use itertools::Itertools;
-
-// enum Op {
-//     Add,
-//     Mul,
-//     Concat
-// }
-
-// fn part_2(data: &Puzzle) -> u64 {
-//     let mut total = 0u64;
-//     for test in &data.equations {
-//         let ops = test.values.len() - 1;
-//         for ops in (0..ops).map(|_| [Op::Add, Op::Mul, Op::Concat].iter()).multi_cartesian_product() {
-//             let mut t = test.values[0];
-//             for (i, v) in (&test.values[1..]).iter().enumerate() {
-//                 match ops[i] {
-//                     Op::Add => t += v,
-//                     Op::Mul => t *= v,
-//                     Op::Concat => t = (t * 10u64.pow(v.ilog10() + 1)) + v
-//                 }
-//                 if t > test.result {break;}
-//             }
-//             if t == test.result {
-//                 total += test.result;
-//                 break;
-//             }
-//         }
-//     }
-//     total
-// }
-
-use std::collections::HashSet;
-
-fn part_2(data: &Puzzle) -> u64 {
-    let mut total = 0u64;
-    for e in &data.equations {
-        let vs = e.values[1..].iter().fold(HashSet::from([e.values[0]]), |vs, v| {
-            vs.into_iter().flat_map(|total| {
-                if total <= e.result {
-                    [
-                        total + v,
-                        total * v,
-                        total * 10u64.pow(v.ilog10() + 1) + v
-                    ]
-                } else {
-                    [u64::MAX, u64::MAX, u64::MAX]
-                }
-            }).collect()
-        });
-        if vs.contains(&e.result) {
-            total += e.result
-        }
-    }
-    total
+fn part_2(puzzle: &Puzzle) -> u64 {
+    puzzle.equations.iter()
+        .filter(|e| e.is_valid(&[Op::Add, Op::Mul, Op::Concat]))
+        .map(|e| e.result)
+        .sum()
 }
 
 pub(crate) fn solve() {
     let data = include_str!("../../data/day_7/input.txt");
-    let data = Puzzle::load(data);
-    println!("part 1: {}", part_1(&data));
-    println!("part 2: {}", part_2(&data));
+    let puzzle = Puzzle::load(data);
+    println!("part 1: {}", part_1(&puzzle));
+    println!("part 2: {}", part_2(&puzzle));
 }
 
 mod tests {
