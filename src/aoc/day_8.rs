@@ -1,28 +1,34 @@
 use std::collections::{HashMap, HashSet};
+use crate::aoc::grid::Grid;
 
-struct Data {
-    grid: Vec<Vec<char>>
+struct Puzzle {
+    map: Grid<char>
 }
 
-impl Data {
-    fn new(data: &str) -> Self {
-        Data {grid: data.trim().lines().map(|s| s.trim().chars().collect()).collect()}
+impl Puzzle {
+    fn parse(data: &str) -> Option<Puzzle> {
+        let map = Grid::parse(data, "")?;
+        Some(Puzzle {map})
+    }
+
+    fn load(data: &str) -> Self {
+        Puzzle::parse(data).expect("valid input")
     }
 }
 
-fn part_1(data: &Data) -> u32 {
-    let width = data.grid[0].len() as i32;
-    let height = data.grid.len() as i32;
+fn solve_part_1(puzzle: &Puzzle) -> usize {
+    let (width, height) = puzzle.map.size();
+    let (width, height) = (width as i32, height as i32);
     let mut antennas = HashMap::new();
     let mut anti_nodes = HashSet::new();
     for y in 0..height {
         for x in 0..width {
-            let c = data.grid[y as usize][x as usize];
+            let c = puzzle.map.get((x as usize, y as usize));
             if c != '.' {
                 let antennas = antennas.entry(c).or_insert(Vec::new());
-                for (lx, ly) in antennas.iter() {
-                    let (dx, dy) = (x - lx, y - ly);
-                    let (nx, ny) = (lx - dx, ly - dy);
+                for (ax, ay) in antennas.iter() {
+                    let (dx, dy) = (x - ax, y - ay);
+                    let (nx, ny) = (ax - dx, ay - dy);
                     if (nx >= 0) && (nx < width) && (ny >= 0) && (ny < height) {
                         anti_nodes.insert((nx, ny));
                     }
@@ -35,23 +41,23 @@ fn part_1(data: &Data) -> u32 {
             }
         }
     }
-    anti_nodes.len() as u32
+    anti_nodes.len()
 }
 
-fn part_2(data: &Data) -> u32 {
-    let width = data.grid[0].len() as i32;
-    let height = data.grid.len() as i32;
+fn solve_part_2(puzzle: &Puzzle) -> usize {
+    let (width, height) = puzzle.map.size();
+    let (width, height) = (width as i32, height as i32);
     let mut antennas = HashMap::new();
     let mut anti_nodes = HashSet::new();
     for y in 0..height {
         for x in 0..width {
-            let c = data.grid[y as usize][x as usize];
+            let c = puzzle.map.get((x as usize, y as usize));
             if c != '.' {
                 let antennas = antennas.entry(c).or_insert(Vec::new());
-                for (lx, ly) in antennas.iter() {
-                    let (dx, dy) = (x - lx, y - ly);
+                for (ax, ay) in antennas.iter() {
+                    let (dx, dy) = (x - ax, y - ay);
                     for i in 0.. {
-                        let (nx, ny) = (lx - dx * i, ly - dy * i);
+                        let (nx, ny) = (ax - dx * i, ay - dy * i);
                         let d1 = if (nx >= 0) && (nx < width) && (ny >= 0) && (ny < height) {
                             anti_nodes.insert((nx, ny));
                             false
@@ -72,14 +78,14 @@ fn part_2(data: &Data) -> u32 {
             }
         }
     }
-    anti_nodes.len() as u32
+    anti_nodes.len()
 }
 
 pub(crate) fn solve() {
     let data = include_str!("../../data/day_8/input.txt");
-    let data = Data::new(data);
-    println!("part 1: {}", part_1(&data));
-    println!("part 2: {}", part_2(&data));
+    let puzzle = Puzzle::load(data);
+    println!("part 1: {}", solve_part_1(&puzzle));
+    println!("part 2: {}", solve_part_2(&puzzle));
 }
 
 #[cfg(test)]
@@ -89,14 +95,14 @@ mod tests {
     #[test]
     fn test_part_1() {
         let data = include_str!("../../data/day_8/test.txt");
-        let data = Data::new(data);
-        assert_eq!(part_1(&data), 14);
+        let puzzle = Puzzle::load(data);
+        assert_eq!(solve_part_1(&puzzle), 14);
     }
 
     #[test]
     fn test_part_2() {
         let data = include_str!("../../data/day_8/test.txt");
-        let data = Data::new(data);
-        assert_eq!(part_2(&data), 34);
+        let puzzle = Puzzle::load(data);
+        assert_eq!(solve_part_2(&puzzle), 34);
     }
 }
