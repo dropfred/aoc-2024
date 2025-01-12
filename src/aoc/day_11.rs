@@ -1,13 +1,19 @@
 use std::collections::HashMap;
 
-struct Data {
+struct Puzzle {
     stones: Vec<u64>
 }
 
-impl Data {
-    fn new(data: &str) -> Self {
-        let stones = data.trim().split(' ').map(|s| s.parse().unwrap()).collect();
-        Data {stones}
+impl Puzzle {
+    fn parse(data: &str) -> Option <Self> {
+        let stones: Option<Vec<_>> = data.trim().split(' ').map(|s| s.parse().ok()).collect();
+        let stones = stones?;
+        Some(Self {stones})
+    }
+
+    
+    fn load(data: &str) -> Self {
+        Self::parse(data).expect("valid input")
     }
 
     fn blink(&self, blinks: u8) -> u64 {
@@ -34,19 +40,19 @@ impl Data {
     }
 }
 
-fn part_1(data: &Data) -> u64 {
-    data.blink(25)
+fn part_1(puzzle: &Puzzle) -> u64 {
+    puzzle.blink(25)
 }
 
-fn part_2(data: &Data) -> u64 {
-    data.blink(75)
+fn part_2(puzzle: &Puzzle) -> u64 {
+    puzzle.blink(75)
 }
 
 pub(crate) fn solve() {
     let data = include_str!("../../data/day_11/input.txt");
-    let data = Data::new(data);
-    println!("part 1: {}", part_1(&data));
-    println!("part 2: {}", part_2(&data));
+    let puzzle = Puzzle::load(data);
+    println!("part 1: {}", part_1(&puzzle));
+    println!("part 2: {}", part_2(&puzzle));
 }
 
 #[cfg(test)]
@@ -56,21 +62,21 @@ mod tests {
     #[test]
     fn test_data() {
         let data = include_str!("../../data/day_11/test.txt");
-        let data = Data::new(data);
-        assert_eq!(data.stones.len(), 2);
+        let puzzle = Puzzle::load(data);
+        assert_eq!(puzzle.stones.len(), 2);
     }
 
     #[test]
     fn test_part_1() {
         let data = include_str!("../../data/day_11/test.txt");
-        let data = Data::new(data);
-        assert_eq!(part_1(&data), 55312);
+        let puzzle = Puzzle::load(data);
+        assert_eq!(part_1(&puzzle), 55312);
     }
 
     #[test]
     fn test_part_2() {
         let data = include_str!("../../data/day_11/input.txt");
-        let data = Data::new(data);
-        assert_eq!(part_2(&data), 221632504974231);
+        let puzzle = Puzzle::load(data);
+        assert_eq!(part_2(&puzzle), 221632504974231);
     }
 }
