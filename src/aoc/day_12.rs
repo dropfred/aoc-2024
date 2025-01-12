@@ -1,19 +1,16 @@
 use std::collections::HashSet;
+use crate::aoc::grid::Grid;
 
 const DBG: bool = cfg!(debug_assertions);
 
-struct Data {
-    map: Vec<Vec<char>>
+struct Puzzle {
+    map: Grid<char>
 }
 
-impl Data {
+impl Puzzle {
     fn parse(data: &str) -> Option<Self> {
-        let map: Vec<Vec<_>> = data.trim().lines().map(|s| s.trim().chars().collect()).collect();
-        if map.is_empty() || map.iter().any(|r| r.is_empty() || (r.len() != map[0].len())) {
-            None
-        } else {
-            Some(Data {map})
-        }
+        let map = Grid::parse(data, "")?;
+        Some(Self {map})
     }
 
     fn load(data: &str) -> Self {
@@ -29,8 +26,8 @@ struct Region {
     edges: u32
 }
 
-fn get_regions(data: &Data) -> Vec<Region> {
-    let (iw, ih) = (data.map[0].len() as i32, data.map.len() as i32);
+fn get_regions(puzzle: &Puzzle) -> Vec<Region> {
+    let (iw, ih) = {let (w, h) = puzzle.map.size(); (w as i32, h as i32)};
 
     struct R {
         name: char,
@@ -42,7 +39,7 @@ fn get_regions(data: &Data) -> Vec<Region> {
     let mut vs = HashSet::new();
     for y in 0..ih {
         for x in 0..iw {
-            let n = data.map[y as usize][x as usize];
+            let n = puzzle.map.get((x as usize, y as usize));
             if !vs.contains(&(x, y)) {
                 vs.insert((x, y));
                 let mut r = R {name: n, cells: Vec::new(), borders: Vec::new()};
@@ -54,7 +51,7 @@ fn get_regions(data: &Data) -> Vec<Region> {
                     for d in ['<', '>', '^', 'v'] {
                         let (dx, dy) = get_offset(d);
                         let (nx, ny) = (x + dx, y + dy);
-                        if (nx >= 0) && (nx < iw) && (ny >= 0) && (ny < ih) && (data.map[ny as usize][nx as usize] == n) {
+                        if (nx >= 0) && (nx < iw) && (ny >= 0) && (ny < ih) && (puzzle.map.get((nx as usize, ny as usize)) == n) {
                             if !vs.contains(&(nx, ny)) {
                                 vs.insert((nx, ny));
                                 s.push((nx, ny));
@@ -115,19 +112,19 @@ fn get_offset(d: char) -> (i32, i32) {
     }
 }
 
-fn part_1(data: &Data) -> u32 {
-    get_regions(data).iter().map(|r| r.area * r.perimeter).sum()
+fn part_1(puzzle: &Puzzle) -> u32 {
+    get_regions(puzzle).iter().map(|r| r.area * r.perimeter).sum()
 }
 
-fn part_2(data: &Data) -> u32 {
-    get_regions(data).iter().map(|r| r.area * r.edges).sum()
+fn part_2(puzzle: &Puzzle) -> u32 {
+    get_regions(puzzle).iter().map(|r| r.area * r.edges).sum()
 }
 
 pub(crate) fn solve() {
     let data = include_str!("../../data/day_12/input.txt");
-    let data = Data::load(data);
-    println!("part 1: {}", part_1(&data));
-    println!("part 2: {}", part_2(&data));
+    let puzzle = Puzzle::load(data);
+    println!("part 1: {}", part_1(&puzzle));
+    println!("part 2: {}", part_2(&puzzle));
 }
 
 #[cfg(test)]
@@ -152,18 +149,9 @@ mod tests {
     ";
 
     #[test]
-    fn test_data() {
-        let data = include_str!("../../data/day_12/test.txt");
-        let data = Data::load(data);
-        assert_eq!(data.map.len(), 10);
-        assert_eq!(data.map[0].len(), 10);
-        assert!(data.map.iter().all(|v| v.len() == data.map[0].len()));
-    }
-
-    #[test]
     fn test_regions() {
-        let data = Data::load(TEST_ABCDE);
-        let regions = get_regions(&data);
+        let puzzle = Puzzle::load(TEST_ABCDE);
+        let regions = get_regions(&puzzle);
         for r in regions {
             let (area, perimeter, edges) = match r.name {
                 'A' => (4, 10, 4),
@@ -178,8 +166,8 @@ mod tests {
             assert_eq!(r.edges, edges);
         }
 
-        let data = Data::load(TEST_OX);
-        let regions = get_regions(&data);
+        let puzzle = Puzzle::load(TEST_OX);
+        let regions = get_regions(&puzzle);
         for r in regions {
             let (area, perimeter, edges) = match r.name {
                 'O' => (21, 36, 20),
@@ -194,27 +182,27 @@ mod tests {
 
     #[test]
     fn test_part_1() {
-        let data = Data::load(TEST_ABCDE);
-        assert_eq!(part_1(&data), 140);
+        let puzzle = Puzzle::load(TEST_ABCDE);
+        assert_eq!(part_1(&puzzle), 140);
 
-        let data = Data::load(TEST_OX);
-        assert_eq!(part_1(&data), 772);
+        let puzzle = Puzzle::load(TEST_OX);
+        assert_eq!(part_1(&puzzle), 772);
 
         let data = include_str!("../../data/day_12/test.txt");
-        let data = Data::load(data);
-        assert_eq!(part_1(&data), 1930);
+        let puzzle = Puzzle::load(data);
+        assert_eq!(part_1(&puzzle), 1930);
     }
 
     #[test]
     fn test_part_2() {
-        let data = Data::load(TEST_ABCDE);
+        let data = Puzzle::load(TEST_ABCDE);
         assert_eq!(part_2(&data), 80);
 
-        let data = Data::load(TEST_OX);
-        assert_eq!(part_2(&data), 436);
+        let puzzle = Puzzle::load(TEST_OX);
+        assert_eq!(part_2(&puzzle), 436);
 
         let data = include_str!("../../data/day_12/test.txt");
-        let data = Data::load(data);
-        assert_eq!(part_2(&data), 1206);
+        let puzzle = Puzzle::load(data);
+        assert_eq!(part_2(&puzzle), 1206);
     }
 }
