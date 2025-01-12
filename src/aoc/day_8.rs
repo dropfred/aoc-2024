@@ -6,13 +6,13 @@ struct Puzzle {
 }
 
 impl Puzzle {
-    fn parse(data: &str) -> Option<Puzzle> {
+    fn parse(data: &str) -> Option<Self> {
         let map = Grid::parse(data, "")?;
-        Some(Puzzle {map})
+        Some(Self {map})
     }
 
     fn load(data: &str) -> Self {
-        Puzzle::parse(data).expect("valid input")
+        Self::parse(data).expect("valid input")
     }
 }
 

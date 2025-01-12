@@ -15,7 +15,7 @@ impl Puzzle {
             (if id != u32::MAX {&mut files} else {&mut spaces}).push((fs.len(), n as usize));
             fs.extend(std::iter::repeat(id).take(n as usize));
         }
-        Some(Puzzle {fs, files, spaces})
+        Some(Self {fs, files, spaces})
     }
 
     fn load(data: &str) -> Self {
