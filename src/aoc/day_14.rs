@@ -4,28 +4,34 @@ struct Robot {
     vx: i32,
     vy: i32
 }
-struct Data {
+struct Puzzle {
     robots: Vec<Robot>
 }
 
-impl Data {
-    fn parse(data: &str) -> Self {
-        let robots = data.trim().lines().map(|s| {
-            let (p, v) = s.split_once(" ").unwrap();
-            let (px, py) = p.trim_start_matches("p=").split_once(",").unwrap();
-            let (vx, vy) = v.trim_start_matches("v=").split_once(",").unwrap();
-            let (px, py) = (px.parse().unwrap(), py.parse().unwrap());
-            let (vx, vy) = (vx.parse().unwrap(), vy.parse().unwrap());
-            Robot {px, py, vx, vy}
-        }).collect();
-        Data {robots}
+impl Puzzle {
+    fn parse(data: &str) -> Option<Self> {
+        let parse_robot = |s: &str| {
+            let (p, v) = s.split_once(" ")?;
+            let (px, py) = p.trim_start_matches("p=").split_once(",")?;
+            let (vx, vy) = v.trim_start_matches("v=").split_once(",")?;
+            let (px, py) = (px.parse().ok()?, py.parse().ok()?);
+            let (vx, vy) = (vx.parse().ok()?, vy.parse().ok()?);
+            Some(Robot {px, py, vx, vy})
+        };
+        let robots: Option<_> = data.trim().lines().map(parse_robot).collect();
+        let robots = robots?;
+        Some(Puzzle {robots})
+    }
+
+    fn load(data: &str) -> Self {
+        Self::parse(data).expect("valid input")
     }
 }
 
-fn quadrants(data: &Data, size: (i32, i32), time: i32) -> u32 {
+fn quadrants(puzzle: &Puzzle, size: (i32, i32), time: i32) -> u32 {
     let (w, h) = size;
     let (w2, h2) = (w / 2, h / 2);
-    let qs = data.robots.iter().map(|r| {
+    let qs = puzzle.robots.iter().map(|r| {
         let (mut x, mut y) = ((r.px + r.vx * time) % w, (r.py + r.vy * time) % h);
         if x < 0 {x += w;}
         if y < 0 {y += h;}
@@ -46,17 +52,17 @@ fn quadrants(data: &Data, size: (i32, i32), time: i32) -> u32 {
     qs.0 * qs.1 * qs.2 * qs.3
 }
 
-fn part_1(data: &Data) -> u32 {
-    quadrants(data, (101, 103), 100)
+fn part_1(puzzle: &Puzzle) -> u32 {
+    quadrants(puzzle, (101, 103), 100)
 }
 
-fn part_2(data: &Data, size: (i32, i32)) -> u32 {
-    let n = data.robots.len();
+fn part_2(puzzle: &Puzzle, size: (i32, i32)) -> u32 {
+    let n = puzzle.robots.len();
     let (w, h) = size;
     let (w4, h4) = (w / 4, h / 4);
     // assume that most of the robots are in the middle of the map
     for t in 0..(w * h) {
-        if data.robots.iter().map(|r| {
+        if puzzle.robots.iter().map(|r| {
             let (mut x, mut y) = ((r.px + r.vx * t) % w, (r.py + r.vy * t) % h);
             if x < 0 {x += w;}
             if y < 0 {y += h;}
@@ -68,7 +74,7 @@ fn part_2(data: &Data, size: (i32, i32)) -> u32 {
             for _ in 0..h {
                 map.push(vec![' '; w as usize]);
             }
-            for (x, y) in data.robots.iter().map(|r| {
+            for (x, y) in puzzle.robots.iter().map(|r| {
                 let (mut x, mut y) = ((r.px + r.vx * t) % w, (r.py + r.vy * t) % h);
                 if x < 0 {x += w;}
                 if y < 0 {y += h;}
@@ -88,9 +94,9 @@ fn part_2(data: &Data, size: (i32, i32)) -> u32 {
 
 pub(crate) fn solve() {
     let data = include_str!("../../data/day_14/input.txt");
-    let data = Data::parse(data);
-    println!("part 1: {}", part_1(&data));
-    println!("part 2: {}", part_2(&data, (101, 103)));
+    let puzzle = Puzzle::load(data);
+    println!("part 1: {}", part_1(&puzzle));
+    println!("part 2: {}", part_2(&puzzle, (101, 103)));
 }
 
 #[cfg(test)]
@@ -100,14 +106,14 @@ mod tests {
     #[test]
     fn test_data() {
         let data = include_str!("../../data/day_14/test.txt");
-        let data = Data::parse(data);
-        assert_eq!(data.robots.len(), 12)
+        let puzzle = Puzzle::load(data);
+        assert_eq!(puzzle.robots.len(), 12)
     }
 
     #[test]
     fn test_part_1() {
         let data = include_str!("../../data/day_14/test.txt");
-        let data = Data::parse(data);
-        assert_eq!(quadrants(&data, (11, 7), 100), 12);
+        let puzzle = Puzzle::load(data);
+        assert_eq!(quadrants(&puzzle, (11, 7), 100), 12);
     }
 }

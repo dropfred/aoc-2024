@@ -10,7 +10,7 @@ struct Computer {
 
 impl Computer {
     fn new(a: u64, b: u64, c: u64, program: Vec<u8>) -> Self {
-        Computer {a, b, c, program, ip: 0, out: String::new()}
+        Self {a, b, c, program, ip: 0, out: String::new()}
     }
 
     fn parse(data: &str) -> Option<Self> {
@@ -27,7 +27,7 @@ impl Computer {
         if program.iter().any(|b| *b > 7) {
             return None;
         }
-        Some(Computer::new(a, b, c, program))
+        Some(Self::new(a, b, c, program))
     }
 
     fn load(data: &str) -> Self {
