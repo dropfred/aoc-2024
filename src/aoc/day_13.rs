@@ -4,23 +4,29 @@ struct Game {
     button_b: (i64, i64),
     prize: (i64, i64)
 }
-struct Data {
+struct Puzzle {
     games: Vec<Game>
 }
 
-impl Data {
-    fn new(data: &str) -> Self {
-        let games = data.trim().replace("\r", "").split("\n\n").map(|abp| {
-            let mut abp = abp.lines();
-            let (a_x, a_y) = abp.next().unwrap().trim().split_once(": ").unwrap().1.split_once(", ").unwrap();
-            let (b_x, b_y) = abp.next().unwrap().trim().split_once(": ").unwrap().1.split_once(", ").unwrap();
-            let (p_x, p_y) = abp.next().unwrap().trim().split_once(": ").unwrap().1.split_once(", ").unwrap();
-            let button_a = (a_x.trim_start_matches("X+").parse().unwrap(), a_y.trim_start_matches("Y+").parse().unwrap());
-            let button_b = (b_x.trim_start_matches("X+").parse().unwrap(), b_y.trim_start_matches("Y+").parse().unwrap());
-            let prize = (p_x.trim_start_matches("X=").parse().unwrap(), p_y.trim_start_matches("Y=").parse().unwrap());
-            Game {button_a, button_b, prize}
-        }).collect();
-        Data {games}
+impl Puzzle {
+    fn parse(data: &str) -> Option<Self> {
+        let parse_game = |s: &str| {
+            let mut abp = s.lines();
+            let (a_x, a_y) = abp.next()?.trim().split_once(": ")?.1.split_once(", ")?;
+            let (b_x, b_y) = abp.next()?.trim().split_once(": ")?.1.split_once(", ")?;
+            let (p_x, p_y) = abp.next()?.trim().split_once(": ")?.1.split_once(", ")?;
+            let button_a = (a_x.trim_start_matches("X+").parse().ok()?, a_y.trim_start_matches("Y+").parse().ok()?);
+            let button_b = (b_x.trim_start_matches("X+").parse().ok()?, b_y.trim_start_matches("Y+").parse().ok()?);
+            let prize = (p_x.trim_start_matches("X=").parse().ok()?, p_y.trim_start_matches("Y=").parse().ok()?);
+            Some(Game {button_a, button_b, prize})
+        };
+        let games: Option<_> = data.trim().replace("\r", "").split("\n\n").map(parse_game).collect();
+        let games = games?;
+        Some(Puzzle {games})
+    }
+
+    fn load(data: &str) -> Self {
+        Self::parse(data).expect("valid input")
     }
 }
 
@@ -39,8 +45,8 @@ fn solve_game(game: &Game) -> Option<(i64, i64)> {
     }
 }
 
-fn part_1(data: &Data) -> i64 {
-    data.games.iter().map(|g| {
+fn part_1(puzzle: &Puzzle) -> i64 {
+    puzzle.games.iter().map(|g| {
         if let Some((a, b)) = solve_game(g) {
             3 * a + b
         } else {
@@ -49,8 +55,8 @@ fn part_1(data: &Data) -> i64 {
     }).sum()
 }
 
-fn part_2(data: &Data) -> i64 {
-    data.games.iter().map(|g| {
+fn part_2(puzzle: &Puzzle) -> i64 {
+    puzzle.games.iter().map(|g| {
         let g = Game {prize: (g.prize.0 + 10000000000000, g.prize.1 + 10000000000000), ..*g};
         if let Some((a, b)) = solve_game(&g) {
             3 * a + b
@@ -62,9 +68,9 @@ fn part_2(data: &Data) -> i64 {
 
 pub(crate) fn solve() {
     let data = include_str!("../../data/day_13/input.txt");
-    let data = Data::new(data);
-    println!("part 1: {}", part_1(&data));
-    println!("part 2: {}", part_2(&data));
+    let puzzle = Puzzle::load(data);
+    println!("part 1: {}", part_1(&puzzle));
+    println!("part 2: {}", part_2(&puzzle));
 }
 
 #[cfg(test)]
@@ -74,14 +80,14 @@ mod tests {
     #[test]
     fn test_data() {
         let data = include_str!("../../data/day_13/test.txt");
-        let data = Data::new(data);
-        assert_eq!(data.games.len(), 4);
+        let puzzle = Puzzle::load(data);
+        assert_eq!(puzzle.games.len(), 4);
     }
 
     #[test]
     fn test_part_1() {
         let data = include_str!("../../data/day_13/test.txt");
-        let data = Data::new(data);
-        assert_eq!(part_1(&data), 480);
+        let puzzle = Puzzle::load(data);
+        assert_eq!(part_1(&puzzle), 480);
     }
 }

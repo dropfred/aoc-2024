@@ -13,7 +13,7 @@ impl Puzzle {
             if vs.next().is_some() {return None;}
             Some((v0, v1))
         };
-        let locations: Option<Vec<_>> = data.trim().lines().map(parse_locations).collect();
+        let locations: Option<_> = data.trim().lines().map(parse_locations).collect();
         let locations = locations?;
         Some(Puzzle {locations})
     }
