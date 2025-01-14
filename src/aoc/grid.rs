@@ -15,7 +15,11 @@ impl<T: Copy + std::cmp::PartialEq> Grid<T> {
     }
 
     pub fn from_vec(data: &Vec<Vec<T>>) -> Self {
-        assert!(!data.is_empty() && !data[0].is_empty() && data.iter().skip(1).all(|r| r.len() == data[0].len()));
+        assert!(
+            !data.is_empty() &&
+            !data[0].is_empty() &&
+            data.iter().skip(1).all(|r| r.len() == data[0].len())
+        );
         let (width, height) = (data[0].len(), data.len());
         let mut cells = Vec::with_capacity(width * height);
         for y in 0..height {
@@ -50,7 +54,11 @@ impl<T: Copy + std::cmp::PartialEq> Grid<T> {
         None
     }
 
-    pub fn explore<F: FnMut((usize, usize), (usize, usize), usize) -> bool>(&self, start: (usize, usize), filter: F) -> GridExploreIterator<T, F> {
+    pub fn explore<F: FnMut((usize, usize), (usize, usize), usize) -> bool>(
+        &self,
+        start: (usize, usize),
+        filter: F
+    ) -> GridExploreIterator<T, F> {
         GridExploreIterator::new(self, start, filter)
     }
 }

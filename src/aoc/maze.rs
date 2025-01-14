@@ -31,11 +31,19 @@ impl Maze {
         &self.map
     }
 
-    pub fn explore(&self, start: (usize, usize), wall: char) -> MazeExploreIterator<impl FnMut((usize, usize), (usize, usize), usize) -> bool + '_> {
+    pub fn explore(
+        &self,
+        start: (usize, usize),
+        wall: char
+    ) -> MazeExploreIterator<impl FnMut((usize, usize), (usize, usize), usize) -> bool + '_> {
         MazeExploreIterator::new(self.get_map(), start, move |p, _, _| self.get_map().get(p) != wall)
     }
 
-    pub fn get_path(&self, begin: (usize, usize), end: (usize, usize), wall: char) -> Option<MazePathIterator> {
+    pub fn get_path(
+        &self, begin: (usize, usize),
+        end: (usize, usize),
+        wall: char
+    ) -> Option<MazePathIterator> {
         let mut pps:Grid<(usize, usize)> = Grid::new(self.map.size(), (0, 0));
         for (p, pp, d) in self.explore(begin, wall) {
             pps.set(p, pp);
@@ -44,7 +52,9 @@ impl Maze {
                 let mut p = p;
                 loop {
                     path.push(p);
-                    if p == begin {break;}
+                    if p == begin {
+                        break;
+                    }
                     p = pps.get(p);
                 }
                 return Some(MazePathIterator {path});
@@ -53,10 +63,15 @@ impl Maze {
         None
     }
 
-    pub fn get_distance(&self, begin: (usize, usize), end: (usize, usize), wall: char) -> Option<usize> {
+    pub fn get_distance(
+        &self,
+        begin: (usize, usize),
+        end: (usize, usize),
+        wall: char
+    ) -> Option<usize> {
         for (p, _, d) in self.explore(begin, wall) {
             if p == end {
-                return Some(d)
+                return Some(d);
             }
         }
         None

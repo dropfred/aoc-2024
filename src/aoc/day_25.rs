@@ -55,10 +55,7 @@ impl Puzzle {
             Some(lks)
         };
         let data = data.trim().replace("\r", "");
-        let lkss: Option<Vec<_>> = data
-            .split("\n\n")
-            .map(parse_lk)
-            .collect();
+        let lkss: Option<Vec<_>> = data.split("\n\n").map(parse_lk).collect();
         let lkss = lkss?;
         let (locks, keys): (Vec<_>, Vec<_>) = lkss.iter().partition(|lks| lks.lk == LK::L);
         let mut locks: Vec<_> = locks.into_iter().map(|lks| lks.schema).collect();

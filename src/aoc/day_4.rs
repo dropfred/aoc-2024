@@ -34,17 +34,17 @@ impl<'a> PuzzleIterator<'a> {
                 if self.position == self.data.size.1 {
                     self.next_direction();
                 }
-            },
+            }
             1 => {
                 if self.position == self.data.size.0 {
                     self.next_direction();
                 }
-            },
+            }
             2..=3 => {
                 if self.position == ((self.data.size.0 + self.data.size.1) - 1) {
                     self.next_direction();
                 }
-            },
+            }
             _ => ()
         }
     }
@@ -68,7 +68,7 @@ impl<'a> Iterator for PuzzleIterator<'a> {
                 let r = self.data.letters[self.position].clone();
                 self.next_position();
                 Some(r)
-            },
+            }
             1 => {
                 let mut r = String::new();
                 for s in &self.data.letters {
@@ -76,7 +76,7 @@ impl<'a> Iterator for PuzzleIterator<'a> {
                 }
                 self.next_position();
                 Some(r)
-            },
+            }
             2 => {
                 let mut r = String::new();
                 let br; let bc;
@@ -93,24 +93,21 @@ impl<'a> Iterator for PuzzleIterator<'a> {
                 }
                 self.next_position();
                 Some(r)
-            },
+            }
             3 => {
                 let mut r = String::new();
-                let br; let bc;
-                if self.position < self.data.size.1 {
-                    br = (self.data.size.1 - 1) - self.position;
-                    bc = 0;
+                let (br, bc) = if self.position < self.data.size.1 {
+                    ((self.data.size.1 - 1) - self.position, 0)
                 } else {
-                    br = 0;
-                    bc = self.position - self.data.size.1 + 1;
-                }
+                    (0, self.position - self.data.size.1 + 1)
+                };
                 let s = std::cmp::min(self.data.size.1 - br, self.data.size.0 - bc);
                 for i in 0..s {
                     r.push(self.data.letters[br + i].as_bytes()[bc + i] as char);
                 }
                 self.next_position();
                 Some(r)
-            },
+            }
             _ => None
         }
     }
@@ -135,7 +132,13 @@ fn part_2(data: &Puzzle) -> u32 {
 
     for r in br..er {
         for c in bc..ec {
-            if data.get(r, c) == 'A' && ((data.get(r - 1, c - 1) == 'M' && data.get(r + 1, c + 1) == 'S') || (data.get(r - 1, c - 1) == 'S' && data.get(r + 1, c + 1) == 'M')) && ((data.get(r - 1, c + 1) == 'M' && data.get(r + 1, c - 1) == 'S') || (data.get(r - 1, c + 1) == 'S' && data.get(r + 1, c - 1) == 'M')) {
+            let mrmc = data.get(r - 1, c - 1);
+            let mrpc = data.get(r - 1, c + 1);
+            let prmc = data.get(r + 1, c - 1);
+            let prpc = data.get(r + 1, c + 1);
+            if data.get(r, c) == 'A'
+                && ((mrmc == 'M' && prpc == 'S') || (mrmc == 'S' && prpc == 'M'))
+                && ((mrpc == 'M' && prmc == 'S') || (mrpc == 'S' && prmc == 'M')) {
                 total += 1;
             }
         }
