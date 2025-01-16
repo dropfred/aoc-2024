@@ -1,5 +1,7 @@
 use std::collections::{HashMap, HashSet};
 
+use crate::aoc::sep::SepIteratorTrait;
+
 struct Puzzle {
     connections: Vec<(u16, u16)>
 }
@@ -54,7 +56,7 @@ fn get_trios(puzzle: &Puzzle) -> Vec<(u16, u16, u16)> {
 fn get_computer_string(computer: u16) -> String {
     let (a, b) = (computer & 0xff, computer >> 8);
     let (a, b) = (a as u8  as char, b as u8 as char);
-    format!("{b}{a}").to_string()
+    format!("{b}{a}")
 }
 
 fn part_1(puzzle: &Puzzle) -> usize {
@@ -82,9 +84,12 @@ fn part_2(puzzle: &Puzzle) -> String {
         }
         nets.push(HashSet::from([computer]));
     }
-    let mut net: Vec<_> = nets.iter().max_by(|n1, n2| n1.len().partial_cmp(&n2.len()).unwrap()).unwrap().into_iter().collect();
+    let mut net: Vec<_> = nets.into_iter()
+        .max_by(|n1, n2| n1.len().partial_cmp(&n2.len()).unwrap())
+        .unwrap().into_iter()
+        .collect();
     net.sort();
-    let password: String = (0..(net.len())).zip(net.into_iter()).map(|(i, n)| if i > 0 {format!(",{}", get_computer_string(*n))} else {format!("{}", get_computer_string(*n))}).collect();
+    let password = net.into_iter().map(|n| get_computer_string(n)).sep(",").collect();
     password
 }
 

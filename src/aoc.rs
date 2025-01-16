@@ -1,5 +1,6 @@
 pub(crate) mod grid;
 pub(crate) mod maze;
+pub(crate) mod sep;
 
 pub(crate) mod day_1;
 pub(crate) mod day_2;

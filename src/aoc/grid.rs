@@ -64,7 +64,6 @@ impl<T: Copy + std::cmp::PartialEq> Grid<T> {
 }
 
 impl<T: Default + Copy + std::cmp::PartialEq> Grid<T> {
-
     pub fn new_default(size: (usize, usize)) -> Self {
         Self::new(size, Default::default())
     }
