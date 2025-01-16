@@ -1,3 +1,5 @@
+use crate::aoc::grid::Grid;
+
 struct Robot {
     px: i32,
     py: i32,
@@ -39,7 +41,7 @@ fn quadrants(puzzle: &Puzzle, size: (i32, i32), time: i32) -> u32 {
     }).filter(|(x, y)| {
         (*x != w2) && (*y != h2)
     }).map(|(x, y)| {
-        (if x < w2 {0} else {1}, if y < h2 {0} else {1})
+        ((x >= w2) as u32, (y >= h2) as u32)
     }).fold((0, 0, 0, 0), |(q00, q01, q10, q11), q| {
         match q {
             (0, 0) => (q00 + 1, q01, q10, q11),
@@ -56,39 +58,65 @@ fn part_1(puzzle: &Puzzle) -> u32 {
     quadrants(puzzle, (101, 103), 100)
 }
 
-fn part_2(puzzle: &Puzzle, size: (i32, i32)) -> u32 {
+fn print_robots(robots: &Vec<Robot>, size: (usize, usize), time: u32) {
+    let (w, h) = size;
+    let (w, h) = (w as i32, h as i32);
+    let mut map = Grid::new(size, ' ');
+    for p in robots.iter().map(|r| {
+        let (mut x, mut y) = ((r.px + r.vx * time as i32) % w, (r.py + r.vy * time as i32) % h);
+        if x < 0 {x += w;}
+        if y < 0 {y += h;}
+        (x as usize, y as usize)
+    }) {
+        map.set(p, '#');
+    }
+    println!("{map}");
+}
+
+use std::collections::HashMap;
+
+fn part_2(puzzle: &Puzzle, size: (usize, usize)) -> u32 {
     let n = puzzle.robots.len();
     let (w, h) = size;
+    let (w, h) = (w as i32, h as i32);
+    // assume that at least half of the robots are in the middle of the map
     let (w4, h4) = (w / 4, h / 4);
-    // assume that most of the robots are in the middle of the map
-    for t in 0..(w * h) {
+    for t in 0.. {
         if puzzle.robots.iter().map(|r| {
-            let (mut x, mut y) = ((r.px + r.vx * t) % w, (r.py + r.vy * t) % h);
+            let mut x = (r.px + r.vx * t) % w;
+            let mut y = (r.py + r.vy * t) % h;
             if x < 0 {x += w;}
             if y < 0 {y += h;}
             (x, y)
         }).filter(|(x, y)| {
             (*x > w4) && (*x < (w - w4)) && (*y > h4) && (*y < (h - h4))
         }).count() > (n / 2) {
-            let mut map = Vec::new();
-            for _ in 0..h {
-                map.push(vec![' '; w as usize]);
-            }
-            for (x, y) in puzzle.robots.iter().map(|r| {
-                let (mut x, mut y) = ((r.px + r.vx * t) % w, (r.py + r.vy * t) % h);
-                if x < 0 {x += w;}
-                if y < 0 {y += h;}
-                (x, y)
-            }) {
-                map[y as usize][x as usize] = '#';
-            }
-            println!("time={t}");
-            for s in map {
-                println!("{}", s.iter().collect::<String>());
-            }
+            print_robots(&puzzle.robots, size, t as u32);
             return t as u32;
         }
     }
+
+    // assume that robots are clumped (very crude approximation)
+    // for t in 0.. {
+    //     let mut map = HashMap::new();
+    //     for (x, y) in puzzle.robots.iter().map(|r| {
+    //         let mut x = (r.px + r.vx * t) % w;
+    //         let mut y = (r.py + r.vy * t) % h;
+    //         if x < 0 {x += w;}
+    //         if y < 0 {y += h;}
+    //         (x / 3, y / 3)
+    //     }) {
+    //         let n = map.entry((x as usize, y as usize)).or_insert(0usize);
+    //         *n += 1;
+    //     }
+    //     let ns = map.values().sum::<usize>() as f32 / map.len() as f32;
+    //     // println!("{ns}");
+    //     if ns > 2.0 {
+    //         print_robots(&puzzle.robots, size, t as u32);
+    //         return t as u32;
+    //     }
+
+    // }
     0
 }
 

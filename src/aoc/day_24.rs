@@ -121,7 +121,7 @@ fn part_1(puzzle: &Puzzle) -> Option<u64> {
     let mut zs: Vec<_> = wires.into_iter().filter(|(n, _)| ((n >> 16) as u8) == b'z').collect();
     zs.sort();
     zs.reverse();
-    Some(zs.into_iter().fold(0, |a, (_, s)| (a << 1) | (if s {1} else {0})))
+    Some(zs.into_iter().fold(0, |a, (_, b)| (a << 1) | b as u64))
 }
 
 fn solve_part_1(puzzle: &Puzzle) -> u64 {
