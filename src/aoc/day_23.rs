@@ -1,6 +1,6 @@
 use std::collections::{HashMap, HashSet};
 
-use crate::aoc::sep::SepIteratorTrait;
+use crate::aoc::sep::SepIterator;
 
 struct Puzzle {
     connections: Vec<(u16, u16)>

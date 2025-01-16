@@ -29,8 +29,14 @@ impl Puzzle {
         let data = data.trim().replace("\r", "");
         let parse_wire = |s: &str| {
             let (name, state) = s.split_once(": ")?;
+            if name.len() != 3 {
+                return None;
+            }
+            if (state != "0") && (state != "1") {
+                return None;
+            }
             let name = Self::encode_name(name);
-            let state = if state == "0" {false} else if state == "1" {true} else {return None;};
+            let state = state == "1";
             Some(Wire {name, state})
         };
         let parse_gate = |s: &str| {

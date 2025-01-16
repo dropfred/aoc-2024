@@ -1,6 +1,6 @@
 use std::iter::Peekable;
 
-pub struct SepIterator<I, S>
+pub struct Sep<I, S>
 where
     I: Iterator,
     I::Item: From<S>,
@@ -11,7 +11,7 @@ where
     insert: bool
 }
 
-impl<I, S> SepIterator<I, S>
+impl<I, S> Sep<I, S>
 where
     I: Iterator,
     I::Item: From<S>,
@@ -26,7 +26,7 @@ where
     }
 }
 
-impl<I, S> Iterator for SepIterator<I, S>
+impl<I, S> Iterator for Sep<I, S>
 where
     I: Iterator,
     I::Item: From<S>,
@@ -45,18 +45,18 @@ where
     }
 }
 
-pub trait SepIteratorTrait<S>: Iterator {
-    fn sep(self, separator: S) -> SepIterator<Self, S>
+pub trait SepIterator<S>: Iterator {
+    fn sep(self, separator: S) -> Sep<Self, S>
     where
         Self: Sized,
         Self::Item: From<S>,
         S: Clone
     {
-        SepIterator::new(self, separator)
+        Sep::new(self, separator)
     }
 }
 
-impl<I, S> SepIteratorTrait<S> for I where I: Iterator,I::Item: From<S>, S: Clone {}
+impl<I, S> SepIterator<S> for I where I: Iterator,I::Item: From<S>, S: Clone {}
 
 #[cfg(test)]
 mod tests {
