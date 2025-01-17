@@ -7,24 +7,13 @@ fn usage(exe: &str) -> ! {
     std::process::exit(0)
 }
 
-// macro_rules! aoc {
-//     ($day:expr, [$( $x:expr ),* ]) => {
-//         {
-//             match $day {
-//                 $($x => aoc::day_$x::solve(),)*
-//                 _ => println!("day {} not implemented", $day)
-//             }
-//         }
-//     };
-// }
-
 fn main() {
-    let args: Vec<String> = std::env::args().collect();
+    let args: Vec<_> = std::env::args().collect();
     if args.len() != 2 {
         usage(&args[0]);
     }
 
-    let day = match args[1].parse::<u8>() {
+    let day: u8 = match args[1].parse() {
         Ok(n) if (1..=25).contains(&n) => n,
         _ => {
             usage(&args[0]);
