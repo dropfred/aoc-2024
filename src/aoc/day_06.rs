@@ -119,7 +119,7 @@ fn part_2(data: &mut Data) -> u32 {
 }
 
 pub(crate) fn solve() {
-    let data = include_str!("../../data/day_6/input.txt");
+    let data = include_str!("../../data/day_06/input.txt");
     let mut data = Data::new(data);
     let start = data.position;
     println!("part 1: {}", part_1(&mut data));
@@ -130,7 +130,7 @@ pub(crate) fn solve() {
 mod tests {
     use super::*;
 
-    const DATA: &str = include_str!("../../data/day_6/test.txt");
+    const DATA: &str = include_str!("../../data/day_06/test.txt");
 
     #[test]
     fn test_data() {

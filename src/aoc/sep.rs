@@ -56,7 +56,7 @@ pub trait SepIterator<S>: Iterator {
     }
 }
 
-impl<I, S> SepIterator<S> for I where I: Iterator,I::Item: From<S>, S: Clone {}
+impl<I, S> SepIterator<S> for I where I: Iterator, I::Item: From<S>, S: Clone {}
 
 #[cfg(test)]
 mod tests {

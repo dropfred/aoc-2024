@@ -45,7 +45,7 @@ fn part_2(puzzle: &Puzzle) -> u32 {
 }
 
 pub(crate) fn solve() {
-    let data = include_str!("../../data/day_1/input.txt");
+    let data = include_str!("../../data/day_01/input.txt");
     let puzzle = Puzzle::load(data);
     println!("part 1: {}", part_1(&puzzle));
     println!("part 2: {}", part_2(&puzzle));
@@ -57,14 +57,14 @@ mod tests {
 
     #[test]
     fn test_part_1() {
-        let data = include_str!("../../data/day_1/test.txt");
+        let data = include_str!("../../data/day_01/test.txt");
         let puzzle = Puzzle::load(data);
         assert_eq!(part_1(&puzzle), 11);
     }
 
     #[test]
     fn test_part_2() {
-        let data = include_str!("../../data/day_1/test.txt");
+        let data = include_str!("../../data/day_01/test.txt");
         let puzzle = Puzzle::load(data);
         assert_eq!(part_2(&puzzle), 31);
     }

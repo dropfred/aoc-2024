@@ -47,7 +47,7 @@ fn part_2(data: &Puzzle) -> usize {
 }
 
 pub(crate) fn solve() {
-    let data = include_str!("../../data/day_2/input.txt");
+    let data = include_str!("../../data/day_02/input.txt");
     let data = Puzzle::load(data);
     println!("part 1: {}", part_1(&data));
     println!("part 2: {}", part_2(&data));
@@ -57,7 +57,7 @@ pub(crate) fn solve() {
 mod tests {
     use super::*;
 
-    const DATA: &str = include_str!("../../data/day_2/test.txt");
+    const DATA: &str = include_str!("../../data/day_02/test.txt");
 
     #[test]
     fn test_data() {

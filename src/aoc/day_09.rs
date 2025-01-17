@@ -70,7 +70,7 @@ fn solve_part_2(puzzle: &Puzzle) -> u64 {
 }
 
 pub(crate) fn solve() {
-    let data = include_str!("../../data/day_9/input.txt");
+    let data = include_str!("../../data/day_09/input.txt");
     let puzzle = Puzzle::load(data);
     println!("part 1: {}", solve_part_1(&puzzle));
     println!("part 2: {}", solve_part_2(&puzzle));
@@ -82,7 +82,7 @@ mod tests {
 
     #[test]
     fn test_data() {
-        let data = include_str!("../../data/day_9/test.txt");
+        let data = include_str!("../../data/day_09/test.txt");
         let puzzle = Puzzle::load(data);
         let fs = puzzle.fs.iter().map(|id| if *id != u32::MAX {((*id as u8) + b'0') as char} else {'.'}).collect::<String>();
         assert_eq!(fs, "00...111...2...333.44.5555.6666.777.888899");
@@ -90,14 +90,14 @@ mod tests {
 
     #[test]
     fn test_part_1() {
-        let data = include_str!("../../data/day_9/test.txt");
+        let data = include_str!("../../data/day_09/test.txt");
         let puzzle = Puzzle::load(data);
         assert_eq!(solve_part_1(&puzzle), 1928);
     }
 
     #[test]
     fn test_part_2() {
-        let data = include_str!("../../data/day_9/test.txt");
+        let data = include_str!("../../data/day_09/test.txt");
         let puzzle = Puzzle::load(data);
         assert_eq!(solve_part_2(&puzzle), 2858);
     }
