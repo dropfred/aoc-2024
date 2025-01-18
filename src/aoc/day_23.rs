@@ -1,5 +1,4 @@
 use std::collections::{HashMap, HashSet};
-
 use crate::aoc::sep::SepIterator;
 
 struct Puzzle {
@@ -38,12 +37,12 @@ fn get_trios(puzzle: &Puzzle) -> Vec<(u16, u16, u16)> {
     }
 
     let mut ts = Vec::new();
-    for (a, bs) in &connections {
-        for b in bs {
-            if let Some(cs) = connections.get(b) {
-                for c in cs {
-                    if bs.contains(c) {
-                        ts.push((*a, *b, *c));
+    for (c1, c1s) in &connections {
+        for c2 in c1s {
+            if let Some(c2s) = connections.get(c2) {
+                for c3 in c2s {
+                    if c1s.contains(c3) {
+                        ts.push((*c1, *c2, *c3));
                     }
                 }
             }
@@ -53,23 +52,7 @@ fn get_trios(puzzle: &Puzzle) -> Vec<(u16, u16, u16)> {
     ts
 }
 
-fn get_computer_string(computer: u16) -> String {
-    let (a, b) = (computer & 0xff, computer >> 8);
-    let (a, b) = (a as u8  as char, b as u8 as char);
-    format!("{b}{a}")
-}
-
-fn part_1(puzzle: &Puzzle) -> usize {
-    let ts = get_trios(puzzle);
-    let ts = ts.into_iter().filter(|(a, b, c)| {
-        let t = 't' as u8;
-        (((a >> 8) as u8) == t) || (((b >> 8) as u8) == t)  || (((c >> 8) as u8) == t)
-    }).count();
-
-    ts
-}
-
-fn part_2(puzzle: &Puzzle) -> String {
+fn get_networks(puzzle: &Puzzle) -> Vec<HashSet<u16>> {
     let computers: HashSet<_> = puzzle.connections.iter().flat_map(|(c1, c2)| [*c1, *c2]).collect();
     let connections: HashSet<_> = puzzle.connections.iter().map(|(c1, c2)| (*c1, *c2)).collect();
     let mut nets: Vec<HashSet<_>> = Vec::new();
@@ -84,12 +67,29 @@ fn part_2(puzzle: &Puzzle) -> String {
         }
         nets.push(HashSet::from([computer]));
     }
-    let mut net: Vec<_> = nets.into_iter()
-        .max_by(|n1, n2| n1.len().partial_cmp(&n2.len()).unwrap())
-        .unwrap().into_iter()
-        .collect();
+    nets.into_iter().collect()
+}
+
+fn get_computer_string(computer: u16) -> String {
+    let (a, b) = (computer & 0xff, computer >> 8);
+    let (a, b) = (a as u8  as char, b as u8 as char);
+    format!("{b}{a}")
+}
+
+fn part_1(puzzle: &Puzzle) -> usize {
+    let ts = get_trios(puzzle);
+    let ts = ts.into_iter().filter(|(a, b, c)| {
+        let t = 't' as u8;
+        (((a >> 8) as u8) == t) || (((b >> 8) as u8) == t)  || (((c >> 8) as u8) == t)
+    }).count();
+    ts
+}
+
+fn part_2(puzzle: &Puzzle) -> String {
+    let nets = get_networks(puzzle);
+    let mut net: Vec<_> = nets.iter().max_by(|n1: &&HashSet<u16>, n2| n1.len().cmp(&n2.len())).unwrap().into_iter().collect();
     net.sort();
-    let password = net.into_iter().map(|n| get_computer_string(n)).sep(",").collect();
+    let password = net.into_iter().map(|n| get_computer_string(*n)).sep(",").collect();
     password
 }
 
