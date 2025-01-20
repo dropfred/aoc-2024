@@ -31,12 +31,12 @@ fn is_safe(levels: &Vec<u32>) -> bool {
     true
 }
 
-fn part_1(data: &Puzzle) -> usize {
-    data.reports.iter().filter(|ls| is_safe(ls)).count()
+fn part_1(puzzle: &Puzzle) -> usize {
+    puzzle.reports.iter().filter(|ls| is_safe(ls)).count()
 }
 
-fn part_2(data: &Puzzle) -> usize {
-    data.reports.iter().filter(|ls| {
+fn part_2(puzzle: &Puzzle) -> usize {
+    puzzle.reports.iter().filter(|ls| {
         is_safe(ls) || {
             (0..ls.len()).any(|r| {
                 let vs = (0..r).chain((r + 1)..ls.len()).map(|i| ls[i]).collect();
@@ -48,9 +48,9 @@ fn part_2(data: &Puzzle) -> usize {
 
 pub(crate) fn solve() {
     let data = include_str!("../../data/day_02/input.txt");
-    let data = Puzzle::load(data);
-    println!("part 1: {}", part_1(&data));
-    println!("part 2: {}", part_2(&data));
+    let puzzle = Puzzle::load(data);
+    println!("part 1: {}", part_1(&puzzle));
+    println!("part 2: {}", part_2(&puzzle));
 }
 
 #[cfg(test)]
@@ -61,20 +61,20 @@ mod tests {
 
     #[test]
     fn test_data() {
-        let data = Puzzle::load(DATA);
-        assert_eq!(data.reports.len(), 6);
-        assert!(data.reports.iter().all(|levels| levels.len() == 5));
+        let puzzle = Puzzle::load(DATA);
+        assert_eq!(puzzle.reports.len(), 6);
+        assert!(puzzle.reports.iter().all(|levels| levels.len() == 5));
     }
 
     #[test]
     fn test_part_1() {
-        let data = Puzzle::load(DATA);
-        assert_eq!(part_1(&data), 2);
+        let puzzle = Puzzle::load(DATA);
+        assert_eq!(part_1(&puzzle), 2);
     }
 
     #[test]
     fn test_part_2() {
-        let data = Puzzle::load(DATA);
-        assert_eq!(part_2(&data), 4);
+        let puzzle = Puzzle::load(DATA);
+        assert_eq!(part_2(&puzzle), 4);
     }
 }
