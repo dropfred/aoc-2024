@@ -45,7 +45,7 @@ impl Maze {
         wall: char
     ) -> Option<MazePathIterator> {
         let mut pps:Grid<(usize, usize)> = Grid::new(self.map.size(), (0, 0));
-        for (p, pp, d) in self.explore(begin, wall) {
+        for (p, pp, _) in self.explore(begin, wall) {
             pps.set(p, pp);
             if p == end {
                 let mut path = Vec::new();

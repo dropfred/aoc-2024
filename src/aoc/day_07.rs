@@ -1,5 +1,6 @@
 use std::collections::HashSet;
 
+#[derive(Clone, Copy)]
 enum Op {
     Add,
     Mul,
@@ -13,25 +14,43 @@ struct Equation {
 
 impl Equation {
     fn is_valid<const NOPS: usize>(&self, ops: &[Op; NOPS]) -> bool {
+        assert_ne!(NOPS, 0);
         if self.numbers.is_empty() {
             return false;
         }
-        let mut ts = HashSet::from([self.numbers[0]]);
-        for n in self.numbers.iter().skip(1) {
-            ts = ts.iter().flat_map(|t| {
-                ops.iter()
-                    .map(move |op| {
-                        match op {
-                            Op::Add => t + n,
-                            Op::Mul => t * n,
-                            Op::Concat => (t * 10u64.pow(n.ilog10() + 1)) + n
-                        }
-                    })
-                    .filter(|t| *t <= self.result)
-            }).collect();
-            if ts.is_empty() {return false;}
+        let apply = |op: Op, a: u64, b: u64| {
+            match op {
+                Op::Add => a + b,
+                Op::Mul => a * b,
+                Op::Concat => (a * 10u64.pow(b.ilog10() + 1)) + b
+            }
+        };
+        let mut ns: Vec<(u64, usize)> = Vec::with_capacity(self.numbers.len());
+        for i in 0..self.numbers.len() {
+            if i > 0 {
+                ns.push((apply(ops[0], ns[i - 1].0, self.numbers[i]), 0));
+            } else {
+                ns.push((self.numbers[0], 0));
+            }
         }
-        ts.into_iter().filter(|t| *t == self.result).count() != 0
+        while ns.last().unwrap().0 != self.result {
+            let mut i = ns.len() - 1;
+            loop {
+                if i == 0 {
+                    return false;
+                }
+                ns[i].1 += 1;
+                if ns[i].1 < NOPS {
+                    break;
+                }
+                ns[i].1 = 0;
+                i -= 1;
+            }
+            for i in i..ns.len() {
+                ns[i].0 = apply(ops[ns[i].1], ns[i - 1].0, self.numbers[i]);
+            }
+        }
+        true
     }
 }
 
