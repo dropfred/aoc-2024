@@ -54,6 +54,18 @@ impl<T: Copy + std::cmp::PartialEq> Grid<T> {
         None
     }
 
+    pub fn find_by<F: FnMut(&T) -> bool>(&self, mut f: F) -> Option<(usize, usize)> {
+        let (w, h) = self.size();
+        for y in 0..h {
+            for x in 0..w {
+                if f(&self.get((x, y))) {
+                    return Some((x, y));
+                }
+            }
+        }
+        None
+    }
+
     pub fn explore<F: FnMut((usize, usize), (usize, usize), usize) -> bool>(
         &self,
         start: (usize, usize),
