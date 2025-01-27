@@ -1,5 +1,3 @@
-use std::collections::HashSet;
-
 #[derive(Clone, Copy)]
 enum Op {
     Add,
@@ -26,11 +24,11 @@ impl Equation {
             }
         };
         let mut ns: Vec<(u64, usize)> = Vec::with_capacity(self.numbers.len());
-        for i in 0..self.numbers.len() {
+        for (i, n) in self.numbers.iter().enumerate() {
             if i > 0 {
-                ns.push((apply(ops[0], ns[i - 1].0, self.numbers[i]), 0));
+                ns.push((apply(ops[0], ns[i - 1].0, *n), 0));
             } else {
-                ns.push((self.numbers[0], 0));
+                ns.push((*n, 0));
             }
         }
         while ns.last().unwrap().0 != self.result {
