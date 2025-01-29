@@ -61,11 +61,16 @@ impl<T: Copy + std::cmp::PartialEq> Grid<T> {
         None
     }
 
-    pub fn explore<F: FnMut((usize, usize), (usize, usize), usize) -> bool>(
-        &self,
-        start: (usize, usize),
-        filter: F
-    ) -> GridExploreIterator<T, F> {
+    // pub fn explore<'a, F> (&'a self, start: (usize, usize), filter: F)
+    // -> impl Iterator<Item = ((usize, usize), (usize, usize), usize)> + 'a
+    // where F: FnMut((usize, usize), (usize, usize), usize) -> bool + 'a
+    // {
+    //         GridExploreIterator::new(self, start, filter)
+    // }
+
+    pub fn explore<F> (&self, start: (usize, usize), filter: F) -> GridExploreIterator<T, F>
+    where F: FnMut((usize, usize), (usize, usize), usize) -> bool
+    {
         GridExploreIterator::new(self, start, filter)
     }
 
@@ -75,6 +80,10 @@ impl<T: Copy + std::cmp::PartialEq> Grid<T> {
 
     pub fn rows(&self) -> impl Iterator<Item = &[T]> {
         self.data.chunks_exact(self.size.0)
+    }
+
+    pub fn columns(&self) -> impl Iterator<Item = &[T]> {
+        GridColumnIterator::new(self)
     }
 }
 
@@ -106,37 +115,36 @@ impl<T: Copy + std::cmp::PartialEq + std::str::FromStr + std::fmt::Debug> Grid<T
     }
 }
 
-impl std::fmt::Display for Grid<char> {
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        let mut nl = false;
-        for y in 0..(self.size.1) {
-            if nl {
-                writeln!(f, "")?;
-            }
-            for x in 0..(self.size.0) {
-                write!(f, "{}", self.get((x, y)))?;
-            }
-            nl = true;
-        }
-        Ok(())
+pub struct GridColumnIterator<'a, T> {
+    grid: &'a Grid<T>,
+    x: usize,
+    col: Vec<T>
+}
+
+impl<'a, T: Copy + std::cmp::PartialEq> GridColumnIterator<'a, T> {
+    pub fn new(grid: &'a Grid<T>) -> Self {
+        Self {grid, x: 0, col: Vec::with_capacity(grid.size().1)}
     }
 }
 
-// impl<T: std::fmt::Display> std::fmt::Display for Grid<T> {
-//     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-//         let mut nl = false;
-//         for y in 0..(self.height) {
-//             if nl {
-//                 writeln!(f, "")?;
-//             }
-//             for x in 0..(self.width) {
-//                 write!(f, "{}", self.get(x, y))?;
-//             }
-//             nl = true;
-//         }
-//         Ok(())
-//     }
-// }
+impl<'a, T: Copy + std::cmp::PartialEq> Iterator for GridColumnIterator<'a, T> {
+    type Item = &'a [T];
+
+    fn next(&mut self) -> Option<Self::Item> {
+        let (w, h) = self.grid.size();
+        if self.x < w {
+            self.col.clear();
+            for y in 0..h {
+                self.col.push(self.grid.get((self.x, y)));
+            }
+            self.x += 1;
+            let s = unsafe {std::slice::from_raw_parts(self.col.as_ptr(), self.col.len())};
+            Some(s)
+        } else {
+            None
+        }
+    }
+}
 
 enum Dir {
     East,
@@ -214,6 +222,38 @@ impl<'a, T: Copy + std::cmp::PartialEq, F: FnMut((usize, usize), (usize, usize),
     }
 }
 
+impl std::fmt::Display for Grid<char> {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        let mut nl = false;
+        for y in 0..(self.size.1) {
+            if nl {
+                writeln!(f, "")?;
+            }
+            for x in 0..(self.size.0) {
+                write!(f, "{}", self.get((x, y)))?;
+            }
+            nl = true;
+        }
+        Ok(())
+    }
+}
+
+// impl<T: std::fmt::Display> std::fmt::Display for Grid<T> {
+//     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+//         let mut nl = false;
+//         for y in 0..(self.height) {
+//             if nl {
+//                 writeln!(f, "")?;
+//             }
+//             for x in 0..(self.width) {
+//                 write!(f, "{}", self.get(x, y))?;
+//             }
+//             nl = true;
+//         }
+//         Ok(())
+//     }
+// }
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -288,16 +328,23 @@ mod tests {
         12
         34
         ";
-        let check_row = |r: Option<&[char]>, e: &str| {
-            assert!(r.is_some());
-            let r = r.unwrap();
-            assert!(r.len() == e.len());
-            assert!(r.iter().zip(e.chars()).all(|(c, e)| *c == e));
-        };
         let grid: Grid<char> = Grid::load(data, "");
         let mut rows = grid.rows();
-        check_row(rows.next(), "12");
-        check_row(rows.next(), "34");
+        assert_eq!(rows.next().unwrap(), ['1', '2']);
+        assert_eq!(rows.next().unwrap(), ['3', '4']);
         assert_eq!(rows.next(), None);
+    }
+
+    #[test]
+    fn test_columns() {
+        let data = "
+        12
+        34
+        ";
+        let grid: Grid<char> = Grid::load(data, "");
+        let mut columns = grid.columns();
+        assert_eq!(columns.next().unwrap(), ['1', '3']);
+        assert_eq!(columns.next().unwrap(), ['2', '4']);
+        assert_eq!(columns.next(), None);
     }
 }
