@@ -3,15 +3,15 @@ use std::collections::VecDeque;
 #[derive(Clone)]
 pub struct Grid<T> {
     size: (usize, usize),
-    cells: Vec<T>
+    data: Vec<T>
 }
 
 impl<T: Copy + std::cmp::PartialEq> Grid<T> {
     pub fn new(size: (usize, usize), e: T) -> Self {
         let s = size.0 * size.1;
         assert!(s > 0);
-        let cells = vec![e; s];
-        Self {size, cells}
+        let data = vec![e; s];
+        Self {size, data}
     }
 
     pub fn from_vec(data: &Vec<Vec<T>>) -> Self {
@@ -21,13 +21,8 @@ impl<T: Copy + std::cmp::PartialEq> Grid<T> {
             data.iter().skip(1).all(|r| r.len() == data[0].len())
         );
         let (width, height) = (data[0].len(), data.len());
-        let mut cells = Vec::with_capacity(width * height);
-        for y in 0..height {
-            for x in 0..width {
-                cells.push(data[y][x]);
-            }
-        }
-        Self {size: (width, height), cells}
+        let data = data.iter().flat_map(|xs| xs.iter().cloned()).collect();
+        Self {size: (width, height), data}
     }
 
     pub fn size(&self) -> (usize, usize) {
@@ -35,11 +30,11 @@ impl<T: Copy + std::cmp::PartialEq> Grid<T> {
     }
 
     pub fn get(&self, point: (usize, usize)) -> T {
-        self.cells[point.1 * self.size.0 + point.0]
+        self.data[point.1 * self.size.0 + point.0]
     }
 
     pub fn set(&mut self, point: (usize, usize), v: T) {
-        self.cells[point.1 * self.size.0 + point.0] = v;
+        self.data[point.1 * self.size.0 + point.0] = v;
     }
 
     pub fn find(&self, v: T) -> Option<(usize, usize)> {
@@ -73,6 +68,14 @@ impl<T: Copy + std::cmp::PartialEq> Grid<T> {
     ) -> GridExploreIterator<T, F> {
         GridExploreIterator::new(self, start, filter)
     }
+
+    pub fn cells(&self) -> impl Iterator<Item = &T> {
+        self.data.iter()
+    }
+
+    pub fn rows(&self) -> impl Iterator<Item = &[T]> {
+        self.data.chunks_exact(self.size.0)
+    }
 }
 
 impl<T: Default + Copy + std::cmp::PartialEq> Grid<T> {
@@ -83,16 +86,16 @@ impl<T: Default + Copy + std::cmp::PartialEq> Grid<T> {
 
 impl<T: Copy + std::cmp::PartialEq + std::str::FromStr + std::fmt::Debug> Grid<T> {
     pub fn parse(data: &str, sep: &str) -> Option<Self> where <T as std::str::FromStr>::Err: std::fmt::Debug {
-        let cells: Result<Vec<Vec<_>>, _> = data.trim().lines().map(|r| {
+        let data: Result<Vec<Vec<_>>, _> = data.trim().lines().map(|r| {
             if sep.is_empty() {
                 r.trim().chars().map(|c| T::from_str(&c.to_string())).collect()
             } else {
                 r.trim().split(sep).map(|s| T::from_str(&s)).collect()
             }
         }).collect();
-        let cells = cells.ok()?;
-        if !cells.is_empty() && !cells[0].is_empty() && cells.iter().skip(1).all(|r| r.len() == cells[0].len()) {
-            Some(Self::from_vec(&cells))
+        let data = data.ok()?;
+        if !data.is_empty() && !data[0].is_empty() && data.iter().skip(1).all(|r| r.len() == data[0].len()) {
+            Some(Self::from_vec(&data))
         } else {
             None
         }
@@ -252,7 +255,6 @@ mod tests {
         assert!(grid.is_none());
     }
 
-
     #[test]
     fn test_explore() {
         let data = "
@@ -263,5 +265,39 @@ mod tests {
         let grid: Grid<char> = Grid::load(data, "");
         assert_eq!(grid.explore((2, 1), |_, _, _| true).count(), 15);
         assert_eq!(grid.explore((2, 1), |p, _, _| grid.get(p) != '#').count(), 3);
+    }
+
+    #[test]
+    fn test_cells() {
+        let data = "
+        12
+        34
+        ";
+        let grid: Grid<char> = Grid::load(data, "");
+        let mut cells = grid.cells();
+        assert_eq!(cells.next(), Some(&'1'));
+        assert_eq!(cells.next(), Some(&'2'));
+        assert_eq!(cells.next(), Some(&'3'));
+        assert_eq!(cells.next(), Some(&'4'));
+        assert_eq!(cells.next(), None);
+    }
+
+    #[test]
+    fn test_rows() {
+        let data = "
+        12
+        34
+        ";
+        let check_row = |r: Option<&[char]>, e: &str| {
+            assert!(r.is_some());
+            let r = r.unwrap();
+            assert!(r.len() == e.len());
+            assert!(r.iter().zip(e.chars()).all(|(c, e)| *c == e));
+        };
+        let grid: Grid<char> = Grid::load(data, "");
+        let mut rows = grid.rows();
+        check_row(rows.next(), "12");
+        check_row(rows.next(), "34");
+        assert_eq!(rows.next(), None);
     }
 }
