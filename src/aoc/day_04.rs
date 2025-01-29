@@ -113,9 +113,9 @@ impl<'a> Iterator for PuzzleIterator<'a> {
     }
 }
 
-fn part_1(data: &Puzzle) -> u32 {
+fn part_1(puzzle: &Puzzle) -> u32 {
     let mut total = 0;
-    for s in data {
+    for s in puzzle {
         let nf = s.match_indices("XMAS").count();
         let nb = s.match_indices("SAMX").count();
         total += nf + nb;
@@ -123,20 +123,20 @@ fn part_1(data: &Puzzle) -> u32 {
     total as u32
 }
 
-fn part_2(data: &Puzzle) -> u32 {
+fn part_2(puzzle: &Puzzle) -> u32 {
     let bc = 1;
-    let ec = data.size.0 - 1;
+    let ec = puzzle.size.0 - 1;
     let br = 1;
-    let er = data.size.1 - 1;
+    let er = puzzle.size.1 - 1;
     let mut total = 0;
 
     for r in br..er {
         for c in bc..ec {
-            let mrmc = data.get(r - 1, c - 1);
-            let mrpc = data.get(r - 1, c + 1);
-            let prmc = data.get(r + 1, c - 1);
-            let prpc = data.get(r + 1, c + 1);
-            if data.get(r, c) == 'A'
+            let mrmc = puzzle.get(r - 1, c - 1);
+            let mrpc = puzzle.get(r - 1, c + 1);
+            let prmc = puzzle.get(r + 1, c - 1);
+            let prpc = puzzle.get(r + 1, c + 1);
+            if puzzle.get(r, c) == 'A'
                 && ((mrmc == 'M' && prpc == 'S') || (mrmc == 'S' && prpc == 'M'))
                 && ((mrpc == 'M' && prmc == 'S') || (mrpc == 'S' && prmc == 'M')) {
                 total += 1;
