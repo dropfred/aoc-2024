@@ -74,8 +74,13 @@ impl<T: Copy + std::cmp::PartialEq> Grid<T> {
         GridExploreIterator::new(self, start, filter)
     }
 
-    pub fn cells(&self) -> impl Iterator<Item = &T> {
-        self.data.iter()
+    pub fn cells(&self) -> impl Iterator<Item = ((usize, usize), T)> + '_ {
+        self.data.iter().cloned().enumerate().map(|(i, c)| {
+            let w = self.size.0;
+            let x = i % w;
+            let y = i / w;
+            ((x, y), c)
+        })
     }
 
     pub fn rows(&self) -> impl Iterator<Item = &[T]> {
@@ -115,7 +120,7 @@ impl<T: Copy + std::cmp::PartialEq + std::str::FromStr + std::fmt::Debug> Grid<T
     }
 }
 
-pub struct GridColumnIterator<'a, T> {
+struct GridColumnIterator<'a, T> {
     grid: &'a Grid<T>,
     x: usize,
     col: Vec<T>
@@ -315,10 +320,10 @@ mod tests {
         ";
         let grid: Grid<char> = Grid::load(data, "");
         let mut cells = grid.cells();
-        assert_eq!(cells.next(), Some(&'1'));
-        assert_eq!(cells.next(), Some(&'2'));
-        assert_eq!(cells.next(), Some(&'3'));
-        assert_eq!(cells.next(), Some(&'4'));
+        assert_eq!(cells.next(), Some(((0, 0), '1')));
+        assert_eq!(cells.next(), Some(((1, 0), '2')));
+        assert_eq!(cells.next(), Some(((0, 1), '3')));
+        assert_eq!(cells.next(), Some(((1, 1), '4')));
         assert_eq!(cells.next(), None);
     }
 
