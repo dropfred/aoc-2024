@@ -74,8 +74,8 @@ impl<T: Copy + std::cmp::PartialEq> Grid<T> {
         GridExploreIterator::new(self, start, filter)
     }
 
-    pub fn cells(&self) -> impl Iterator<Item = ((usize, usize), T)> + '_ {
-        self.data.iter().cloned().enumerate().map(|(i, c)| {
+    pub fn cells(&self) -> impl Iterator<Item = ((usize, usize), &T)> {
+        self.data.iter().enumerate().map(|(i, c)| {
             let w = self.size.0;
             let x = i % w;
             let y = i / w;
@@ -320,10 +320,10 @@ mod tests {
         ";
         let grid: Grid<char> = Grid::load(data, "");
         let mut cells = grid.cells();
-        assert_eq!(cells.next(), Some(((0, 0), '1')));
-        assert_eq!(cells.next(), Some(((1, 0), '2')));
-        assert_eq!(cells.next(), Some(((0, 1), '3')));
-        assert_eq!(cells.next(), Some(((1, 1), '4')));
+        assert_eq!(cells.next(), Some(((0, 0), &'1')));
+        assert_eq!(cells.next(), Some(((1, 0), &'2')));
+        assert_eq!(cells.next(), Some(((0, 1), &'3')));
+        assert_eq!(cells.next(), Some(((1, 1), &'4')));
         assert_eq!(cells.next(), None);
     }
 
