@@ -1,4 +1,4 @@
-use std::collections::VecDeque;
+use std::{collections::VecDeque, str::FromStr};
 
 #[derive(Clone)]
 pub struct Grid<T> {
@@ -223,6 +223,17 @@ impl<'a, T: Copy + std::cmp::PartialEq, F: FnMut((usize, usize), (usize, usize),
             Some((position, pposition, distance))
         } else {
             None
+        }
+    }
+}
+
+impl std::str::FromStr for Grid<char> {
+    type Err = ();
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let grid: Option<Self> = Grid::parse(s, "");
+        match grid {
+            Some(grid) => Ok(grid),
+            None => Err(())
         }
     }
 }
