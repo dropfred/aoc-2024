@@ -20,7 +20,7 @@ pub struct Maze {
 
 impl Maze {
     pub fn parse(data: &str) -> Option<Self> {
-        Some(Self {map: Grid::parse(data, "")?})
+        Some(Self {map: data.parse().ok()?})
     }
 
     pub fn load(data: &str) -> Self {
@@ -75,6 +75,17 @@ impl Maze {
             }
         }
         None
+    }
+}
+
+impl std::str::FromStr for Maze {
+    type Err = ();
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let map = s.parse();
+        match map {
+            Ok(map) => Ok(Maze {map}),
+            Err(_) => Err(())
+        }
     }
 }
 
