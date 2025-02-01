@@ -1,4 +1,5 @@
-use std::{collections::VecDeque, str::FromStr};
+use std::collections::VecDeque;
+use std::cmp::PartialEq;
 
 #[derive(Clone)]
 pub struct Grid<T> {
@@ -6,7 +7,7 @@ pub struct Grid<T> {
     data: Vec<T>
 }
 
-impl<T: Copy + std::cmp::PartialEq> Grid<T> {
+impl<T: Copy + PartialEq> Grid<T> {
     pub fn new(size: (usize, usize), e: T) -> Self {
         let s = size.0 * size.1;
         assert!(s > 0);
@@ -74,31 +75,50 @@ impl<T: Copy + std::cmp::PartialEq> Grid<T> {
         GridExploreIterator::new(self, start, filter)
     }
 
-    pub fn cells(&self) -> impl Iterator<Item = ((usize, usize), &T)> {
+    pub fn cells(&self) -> impl Iterator<Item = ((usize, usize), T)> + '_ {
         self.data.iter().enumerate().map(|(i, c)| {
             let w = self.size.0;
             let x = i % w;
             let y = i / w;
-            ((x, y), c)
+            ((x, y), *c)
         })
     }
 
-    pub fn rows(&self) -> impl Iterator<Item = &[T]> {
-        self.data.chunks_exact(self.size.0)
+    pub fn row(&self, index: usize) -> impl Iterator<Item = T> + '_ {
+        let mut i = 0;
+        std::iter::from_fn(move || {
+            if i < self.size().0 {
+                let r = self.get((i, index));
+                i += 1;
+                Some(r)
+            } else {
+                None
+            }
+        })
     }
 
-    pub fn columns(&self) -> impl Iterator<Item = &[T]> {
-        GridColumnIterator::new(self)
+    pub fn column(&self, index: usize) -> impl Iterator<Item = T> + '_ {
+        let mut i = 0;
+        std::iter::from_fn(move || {
+            if i < self.size().1 {
+                let r = self.get((index, i));
+                i += 1;
+                Some(r)
+            } else {
+                None
+            }
+        })
     }
+
 }
 
-impl<T: Default + Copy + std::cmp::PartialEq> Grid<T> {
+impl<T: Default + Copy + PartialEq> Grid<T> {
     pub fn new_default(size: (usize, usize)) -> Self {
         Self::new(size, Default::default())
     }
 }
 
-impl<T: Copy + std::cmp::PartialEq + std::str::FromStr + std::fmt::Debug> Grid<T> {
+impl<T: Copy + PartialEq + std::str::FromStr + std::fmt::Debug> Grid<T> {
     pub fn parse(data: &str, sep: &str) -> Option<Self> where <T as std::str::FromStr>::Err: std::fmt::Debug {
         let data: Result<Vec<Vec<_>>, _> = data.trim().lines().map(|r| {
             if sep.is_empty() {
@@ -117,37 +137,6 @@ impl<T: Copy + std::cmp::PartialEq + std::str::FromStr + std::fmt::Debug> Grid<T
 
     pub fn load(data: &str, sep: &str) -> Self where <T as std::str::FromStr>::Err: std::fmt::Debug {
         Self::parse(data, sep).expect("valid input")
-    }
-}
-
-struct GridColumnIterator<'a, T> {
-    grid: &'a Grid<T>,
-    x: usize,
-    col: Vec<T>
-}
-
-impl<'a, T: Copy + std::cmp::PartialEq> GridColumnIterator<'a, T> {
-    pub fn new(grid: &'a Grid<T>) -> Self {
-        Self {grid, x: 0, col: Vec::with_capacity(grid.size().1)}
-    }
-}
-
-impl<'a, T: Copy + std::cmp::PartialEq> Iterator for GridColumnIterator<'a, T> {
-    type Item = &'a [T];
-
-    fn next(&mut self) -> Option<Self::Item> {
-        let (w, h) = self.grid.size();
-        if self.x < w {
-            self.col.clear();
-            for y in 0..h {
-                self.col.push(self.grid.get((self.x, y)));
-            }
-            self.x += 1;
-            let s = unsafe {std::slice::from_raw_parts(self.col.as_ptr(), self.col.len())};
-            Some(s)
-        } else {
-            None
-        }
     }
 }
 
@@ -180,7 +169,7 @@ pub struct GridExploreIterator<'a, T, F: FnMut((usize, usize), (usize, usize), u
     visited: Vec<u64>
 }
 
-impl<'a, T: Copy + std::cmp::PartialEq, F: FnMut((usize, usize), (usize, usize), usize) -> bool> GridExploreIterator<'a, T, F> {
+impl<'a, T: Copy + PartialEq, F: FnMut((usize, usize), (usize, usize), usize) -> bool> GridExploreIterator<'a, T, F> {
     pub fn new(grid: &'a Grid<T>, start: (usize, usize), filter: F) -> Self {
         let (w, h) = grid.size();
         let positions = VecDeque::new();
@@ -205,7 +194,7 @@ impl<'a, T: Copy + std::cmp::PartialEq, F: FnMut((usize, usize), (usize, usize),
     }
 }
 
-impl<'a, T: Copy + std::cmp::PartialEq, F: FnMut((usize, usize), (usize, usize), usize) -> bool> Iterator for GridExploreIterator<'a, T, F> {
+impl<'a, T: Copy + PartialEq, F: FnMut((usize, usize), (usize, usize), usize) -> bool> Iterator for GridExploreIterator<'a, T, F> {
     type Item = ((usize, usize), (usize, usize), usize);
 
     fn next(&mut self) -> Option<Self::Item> {
@@ -331,36 +320,62 @@ mod tests {
         ";
         let grid: Grid<char> = Grid::load(data, "");
         let mut cells = grid.cells();
-        assert_eq!(cells.next(), Some(((0, 0), &'1')));
-        assert_eq!(cells.next(), Some(((1, 0), &'2')));
-        assert_eq!(cells.next(), Some(((0, 1), &'3')));
-        assert_eq!(cells.next(), Some(((1, 1), &'4')));
+        assert_eq!(cells.next(), Some(((0, 0), '1')));
+        assert_eq!(cells.next(), Some(((1, 0), '2')));
+        assert_eq!(cells.next(), Some(((0, 1), '3')));
+        assert_eq!(cells.next(), Some(((1, 1), '4')));
         assert_eq!(cells.next(), None);
     }
 
     #[test]
-    fn test_rows() {
+    fn test_row() {
         let data = "
         12
         34
         ";
         let grid: Grid<char> = Grid::load(data, "");
-        let mut rows = grid.rows();
-        assert_eq!(rows.next().unwrap(), ['1', '2']);
-        assert_eq!(rows.next().unwrap(), ['3', '4']);
-        assert_eq!(rows.next(), None);
+        let mut row = grid.row(0);
+        assert_eq!(row.next(), Some('1'));
+        assert_eq!(row.next(), Some('2'));
+        assert_eq!(row.next(), None);
     }
 
     #[test]
-    fn test_columns() {
+    fn test_column() {
         let data = "
         12
         34
         ";
         let grid: Grid<char> = Grid::load(data, "");
-        let mut columns = grid.columns();
-        assert_eq!(columns.next().unwrap(), ['1', '3']);
-        assert_eq!(columns.next().unwrap(), ['2', '4']);
-        assert_eq!(columns.next(), None);
+        let mut row = grid.column(0);
+        assert_eq!(row.next(), Some('1'));
+        assert_eq!(row.next(), Some('3'));
+        assert_eq!(row.next(), None);
     }
+
+    // #[test]
+    // fn test_rows() {
+    //     let data = "
+    //     12
+    //     34
+    //     ";
+    //     let grid: Grid<char> = Grid::load(data, "");
+    //     let mut rows = grid.rows();
+    //     assert_eq!(rows.next().unwrap(), ['1', '2']);
+    //     assert_eq!(rows.next().unwrap(), ['3', '4']);
+    //     assert_eq!(rows.next(), None);
+    // }
+
+    // #[test]
+    // fn test_columns() {
+    //     let data = "
+    //     12
+    //     34
+    //     ";
+    //     let grid: Grid<char> = Grid::load(data, "");
+    //     let mut columns = grid.columns();
+    //     assert_eq!(columns.next().unwrap(), ['1', '3']);
+    //     assert_eq!(columns.next().unwrap(), ['2', '4']);
+    //     assert_eq!(columns.next(), None);
+    // }
 }
