@@ -97,6 +97,19 @@ impl<T: Copy + PartialEq> Grid<T> {
         })
     }
 
+    pub fn rows(&self) -> impl Iterator<Item = impl Iterator<Item = T> + '_> {
+        let mut i = 0;
+        std::iter::from_fn(move || {
+            if i < self.size().0 {
+                let r = self.row(i);
+                i += 1;
+                Some(r)
+            } else {
+                None
+            }
+        })
+    }
+
     pub fn column(&self, index: usize) -> impl Iterator<Item = T> + '_ {
         let mut i = 0;
         std::iter::from_fn(move || {
@@ -110,6 +123,18 @@ impl<T: Copy + PartialEq> Grid<T> {
         })
     }
 
+    pub fn columns(&self) -> impl Iterator<Item = impl Iterator<Item = T> + '_> {
+        let mut i = 0;
+        std::iter::from_fn(move || {
+            if i < self.size().0 {
+                let r = self.column(i);
+                i += 1;
+                Some(r)
+            } else {
+                None
+            }
+        })
+    }
 }
 
 impl<T: Default + Copy + PartialEq> Grid<T> {
@@ -353,29 +378,29 @@ mod tests {
         assert_eq!(row.next(), None);
     }
 
-    // #[test]
-    // fn test_rows() {
-    //     let data = "
-    //     12
-    //     34
-    //     ";
-    //     let grid: Grid<char> = Grid::load(data, "");
-    //     let mut rows = grid.rows();
-    //     assert_eq!(rows.next().unwrap(), ['1', '2']);
-    //     assert_eq!(rows.next().unwrap(), ['3', '4']);
-    //     assert_eq!(rows.next(), None);
-    // }
+    #[test]
+    fn test_rows() {
+        let data = "
+        12
+        34
+        ";
+        let grid: Grid<char> = Grid::load(data, "");
+        let mut rows = grid.rows();
+        assert_eq!(rows.next().unwrap().collect::<Vec<_>>(), vec!['1', '2']);
+        assert_eq!(rows.next().unwrap().collect::<Vec<_>>(), vec!['3', '4']);
+        assert!(rows.next().is_none());
+    }
 
-    // #[test]
-    // fn test_columns() {
-    //     let data = "
-    //     12
-    //     34
-    //     ";
-    //     let grid: Grid<char> = Grid::load(data, "");
-    //     let mut columns = grid.columns();
-    //     assert_eq!(columns.next().unwrap(), ['1', '3']);
-    //     assert_eq!(columns.next().unwrap(), ['2', '4']);
-    //     assert_eq!(columns.next(), None);
-    // }
+    #[test]
+    fn test_columns() {
+        let data = "
+        12
+        34
+        ";
+        let grid: Grid<char> = Grid::load(data, "");
+        let mut rows = grid.columns();
+        assert_eq!(rows.next().unwrap().collect::<Vec<_>>(), vec!['1', '3']);
+        assert_eq!(rows.next().unwrap().collect::<Vec<_>>(), vec!['2', '4']);
+        assert!(rows.next().is_none());
+    }
 }
